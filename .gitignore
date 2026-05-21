@@ -1,0 +1,12 @@
+.vs/
+
+[Bb]in/
+[Oo]bj/
+
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+*.slnx.user

@@ -1,0 +1,33 @@
+# ninja log v7
+40	105	8008327665587041	CMakeFiles/ProcessHooker.dir/ext/minhook/hde/hde32.c.obj	be7181024d20708
+35	253	8008327665536937	CMakeFiles/ProcessHooker.dir/ext/minhook/buffer.c.obj	da72598d08c3e851
+44	270	8008327665631534	CMakeFiles/ProcessHooker.dir/ext/minhook/hde/hde64.c.obj	ce10e5b9fcf1d71e
+50	275	8008327665686710	CMakeFiles/ProcessHooker.dir/ext/minhook/hook.c.obj	9073169c322cb3fd
+55	313	8008327665741826	CMakeFiles/ProcessHooker.dir/ext/minhook/trampoline.c.obj	36b65bda30f38dcf
+24	425	8008327665431726	CMakeFiles/ProcessHooker.dir/ext/imgui/imgui_tables.cpp.obj	1f6d02a571737991
+8	435	8008327665261560	CMakeFiles/ProcessHooker.dir/ext/imgui/imgui_demo.cpp.obj	6df783bdf5ebe1d9
+20	448	8008327665386664	CMakeFiles/ProcessHooker.dir/ext/imgui/imgui_impl_win32.cpp.obj	86068bc4dedcb374
+11	520	8008327665301564	CMakeFiles/ProcessHooker.dir/ext/imgui/imgui_draw.cpp.obj	62ad6fefe3ca6a71
+30	572	8008327665481888	CMakeFiles/ProcessHooker.dir/ext/imgui/imgui_widgets.cpp.obj	acb0db8e8819431d
+16	595	8008327665346656	CMakeFiles/ProcessHooker.dir/ext/imgui/imgui_impl_dx11.cpp.obj	3a9855e21497990f
+4	742	8008327665221577	CMakeFiles/ProcessHooker.dir/ext/imgui/imgui.cpp.obj	3ee21a6d9982e02c
+358	854	8010302646643860	ProcessHooker.dll	262f832d5d48d10f
+358	854	8010302646643860	ProcessHooker.lib	262f832d5d48d10f
+6	225	8010320597021405	build.ninja	7d32da7d70809da5
+6	225	8010320596991568	C:/Users/justi/C++ Code/Internal Base Starter/ProcessHooker/ProcessHooker/out/build/x64-Debug/cmake_install.cmake	7d32da7d70809da5
+113	673	8010302224430121	CMakeFiles/ProcessHooker.dir/src/ext/minhook/hde/hde32.c.obj	c8ec40f4f0d2fb4a
+108	685	8010302224376129	CMakeFiles/ProcessHooker.dir/src/ext/minhook/buffer.c.obj	9e99f21bd30839b8
+124	689	8010302224497531	CMakeFiles/ProcessHooker.dir/src/ext/minhook/hook.c.obj	b676ef2884c99be
+119	691	8010302224477485	CMakeFiles/ProcessHooker.dir/src/ext/minhook/hde/hde64.c.obj	9fef120d523436b5
+129	694	8010302224563115	CMakeFiles/ProcessHooker.dir/src/ext/minhook/trampoline.c.obj	1dc49fce02423de0
+40	209	8010302336557489	CMakeFiles/ProcessHooker.dir/src/core/hooks.cpp.obj	638698d7145cd80c
+54	746	8010302223798876	CMakeFiles/ProcessHooker.dir/src/core/dllmain.cpp.obj	83d5a83237e16ed1
+98	823	8010302224272242	CMakeFiles/ProcessHooker.dir/src/ext/imgui/imgui_tables.cpp.obj	cc4f86018e1b25e7
+92	881	8010302224212935	CMakeFiles/ProcessHooker.dir/src/ext/imgui/imgui_impl_win32.cpp.obj	73e4a65e5db5266c
+76	884	8010302224047251	CMakeFiles/ProcessHooker.dir/src/ext/imgui/imgui_demo.cpp.obj	efe8d5e686ac8579
+82	979	8010302224085357	CMakeFiles/ProcessHooker.dir/src/ext/imgui/imgui_draw.cpp.obj	42e867cdef7dde22
+102	996	8010302224314637	CMakeFiles/ProcessHooker.dir/src/ext/imgui/imgui_widgets.cpp.obj	33df327f70a48f6b
+87	1027	8010302224161023	CMakeFiles/ProcessHooker.dir/src/ext/imgui/imgui_impl_dx11.cpp.obj	584bef5fe3405c7b
+49	1063	8010302223715492	CMakeFiles/ProcessHooker.dir/src/Logger/Logger.cpp.obj	d768b5fb2b0585a8
+72	1189	8010302224002735	CMakeFiles/ProcessHooker.dir/src/ext/imgui/imgui.cpp.obj	8ed6da6a4943c605
+49	358	8010302643556461	CMakeFiles/ProcessHooker.dir/src/core/main.cpp.obj	f3f85823203393de

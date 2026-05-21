@@ -1,0 +1,41 @@
+﻿  dllmain.cpp
+  hooks.cpp
+  imgui.cpp
+  imgui_demo.cpp
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\core\hooks.cpp(1,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui.cpp(2202,10): error C2006: '#include': expected "FILENAME" or <FILENAME>
+  imgui_draw.cpp
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui.cpp(3045,9): warning C4005: 'va_copy': macro redefinition
+      C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui.cpp(3043,9):
+      see previous definition of 'va_copy'
+  
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui.cpp(18061,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_demo.cpp(190,9): warning C4005: 'IM_NEWLINE': macro redefinition
+      C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_demo.cpp(188,9):
+      see previous definition of 'IM_NEWLINE'
+  
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_demo.cpp(206,9): warning C4005: 'PRId64': macro redefinition
+      C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_demo.cpp(203,9):
+      see previous definition of 'PRId64'
+  
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_demo.cpp(207,9): warning C4005: 'PRIu64': macro redefinition
+      C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_demo.cpp(204,9):
+      see previous definition of 'PRIu64'
+  
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_demo.cpp(224,9): warning C4005: 'IMGUI_CDECL': macro redefinition
+      C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_demo.cpp(222,9):
+      see previous definition of 'IMGUI_CDECL'
+  
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_demo.cpp(10887,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_draw.cpp(131,10): error C2006: '#include': expected "FILENAME" or <FILENAME>
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_draw.cpp(156,10): error C2006: '#include': expected "FILENAME" or <FILENAME>
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_draw.cpp(6346,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_impl_dx11.cpp
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_impl_dx11.cpp(680,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_impl_win32.cpp
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_impl_win32.cpp(975,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_tables.cpp
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_tables.cpp(4570,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_widgets.cpp
+C:\Users\justi\C++ Code\Internal Base Starter\ProcessHooker\ProcessHooker\ext\imgui\imgui_widgets.cpp(10785,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  Generating Code...

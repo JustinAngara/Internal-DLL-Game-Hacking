@@ -1,24 +1,11 @@
+#pragma once
+#include <string>
 
-#include <fstream>
+enum class LogLevel { DBG, INFO, WARNING, ERR, CRITICAL };
 
-/*
-    Logger logger("logfile.txt"); 
-    logger.log(INFO, "Program started.");
-    logger.log(DEBUG, "Debugging information.");
-    logger.log(ERROR, "An error occurred.");
-*/
-
-enum LogLevel { DEBUG, INFO, WARNING, ERROR, CRITICAL };
-
-class Logger {
-public:
-    Logger(const std::string& filename);
-
-    ~Logger();
-
-    void log(LogLevel level, const std::string& message);
-
-private:
-    std::ofstream logFile; 
-    std::string levelToString(LogLevel level);
-};
+namespace Logger 
+{
+    void SetFileName(const std::string& filename);
+    void Log(const std::string& message, LogLevel level = LogLevel::INFO);
+    void Close();
+}

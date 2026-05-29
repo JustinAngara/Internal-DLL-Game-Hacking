@@ -1,59 +1,51 @@
 #include "Logger.h"
-#include <ctime>
-#include <iostream>
+#include <fstream>
 #include <sstream>
+#include <iostream>
+#include <ctime>
 
-Logger::Logger(const std::string& filename)
+
+static std::ofstream logFile;
+
+static std::string LevelToString(LogLevel level)
 {
-    logFile.open(filename, std::ios::app);
-    if (!logFile.is_open()) {
-        std::cerr << "Error opening log file." << std::endl;
+    switch (level)
+    {
+    case LogLevel::DBG:      return "DEBUG";
+    case LogLevel::INFO:     return "INFO";
+    case LogLevel::WARNING:  return "WARNING";
+    case LogLevel::ERR:      return "ERROR";
+    case LogLevel::CRITICAL: return "CRITICAL";
+    default:                 return "UNKNOWN";
     }
 }
 
-
-Logger::~Logger() 
+void Logger::SetFileName(const std::string& filename)
 {
-    logFile.close();
+    logFile.open(filename, std::ios::app);
+    if (!logFile.is_open())
+        std::cerr << "Failed to open log file." << std::endl;
 }
 
-
-void Logger::log(LogLevel level, const std::string& message)
+void Logger::Log(const std::string& message, LogLevel level)
 {
-    // timestamp
     time_t now = time(0);
     tm* timeinfo = localtime(&now);
     char timestamp[20];
-    strftime(timestamp, sizeof(timestamp),
-        "%Y-%m-%d %H:%M:%S", timeinfo);
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", timeinfo);
 
-    std::ostringstream logEntry;
-    logEntry << "[" << timestamp << "] "
-        << levelToString(level) << ": " << message
-        << std::endl;
+    std::ostringstream entry;
+    entry << "[" << timestamp << "] " << LevelToString(level) << ": " << message << "\n";
 
-
-    if (logFile.is_open()) {
-        logFile << logEntry.str();
-        logFile.flush(); 
+    if (logFile.is_open())
+    {
+        logFile << entry.str();
+        logFile.flush();
     }
 }
 
-
-std::string Logger::levelToString(LogLevel level)
+void Logger::Close()
 {
-    switch (level) {
-    case DEBUG:
-        return "DEBUG";
-    case INFO:
-        return "INFO";
-    case WARNING:
-        return "WARNING";
-    case ERROR:
-        return "ERROR";
-    case CRITICAL:
-        return "CRITICAL";
-    default:
-        return "UNKNOWN";
-    }
+    if (logFile.is_open())
+        logFile.close();
 }

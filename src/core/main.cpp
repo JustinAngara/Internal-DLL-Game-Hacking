@@ -1,8 +1,6 @@
-#include "sdk/Logger/logger.h"
+#include "sdk/Logger/Logger.h"
 
 int main()
 {
-	Logger l{ "logger.txt" };
-
 
 }

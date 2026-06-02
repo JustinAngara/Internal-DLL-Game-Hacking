@@ -5,8 +5,10 @@
 
 uintptr_t Memory::GetModuleBase(const char* module)
 {
-    return reinterpret_cast<uintptr_t>(GetModuleHandleA(module));
+    uintptr_t moduleDLLBaseAddr = (uintptr_t)GetModuleHandle(module);
+    return moduleDLLBaseAddr;
 }
+
 
 static std::vector<int> PatternToBytes(const char* pattern)
 {

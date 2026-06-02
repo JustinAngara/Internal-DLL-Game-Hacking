@@ -7,7 +7,7 @@ file(GLOB_RECURSE SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
 )
 
-add_library(ProcessHooker SHARED ${SOURCES} "src/sdk/Memory/PatternScan.h" "src/sdk/Memory/PatternScan.cpp")
+add_library(ProcessHooker SHARED ${SOURCES} "src/sdk/Memory/PatternScan.h" "src/sdk/Memory/PatternScan.cpp" "src/sdk/Utils/Helper.h" "src/sdk/Utils/Helper.cpp")
 
 target_include_directories(ProcessHooker PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"

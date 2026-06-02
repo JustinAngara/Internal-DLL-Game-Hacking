@@ -1,10 +1,14 @@
 #include <Windows.h>
 #include <thread>
 #include "sdk/Logger/Logger.h"
+#include "sdk/Memory/PatternScan.h"
 
+// this gets ran multiple times
 static void MainThread(HMODULE hModule)
 {
-    Logger::Log("this is a log");
+    //Logger::Log("this is a log");
+    Memory::GetModuleBase("ac_client.exe");
+
 
     // cleanup and eject DLL when done
     FreeLibraryAndExitThread(hModule, 0);

@@ -10,25 +10,36 @@ uintptr_t Memory::GetModuleBase(const char* module)
 }
 
 
-static std::vector<int> PatternToBytes(const char* pattern)
+uintptr_t Memory::FindDMAAddy(uintptr_t ptr, std::vector<unsigned int> offsets)
+{
+    uintptr_t addr = ptr;
+    for (unsigned int i = 0; i < offsets.size(); ++i)
+    {
+        if (!addr) return 0;          
+        addr = *(uintptr_t*)addr;
+        addr += offsets[i];
+    }
+    return addr;
+}
+
+
+std::vector<int> Memory::PatternToBytes(const char* pattern)
 {
     std::vector<int> bytes;
-
-    for (const char* c = pattern; *c; ++c)
+    const char* c = pattern;
+    while (*c)
     {
-        if (*c == '?')
-        {
-            ++c;
-            if (*c == '?') ++c;
+        if (*c == ' ') { ++c; continue; }
+        if (*c == '?') {
             bytes.push_back(-1);
-        }
-        else
-        {
-            bytes.push_back(strtoul(c, const_cast<char**>(&c), 16));
+            while (*c == '?') ++c;
+        } else {
+            bytes.push_back(static_cast<int>(strtoul(c, const_cast<char**>(&c), 16)));
         }
     }
     return bytes;
 }
+
 
 uintptr_t Memory::PatternScan(const char* module, const char* signature)
 {

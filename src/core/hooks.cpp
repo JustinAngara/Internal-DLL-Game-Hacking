@@ -5,14 +5,15 @@ twglSwapBuffers owglSwapBuffers;
 
 BOOL __stdcall hkwglSwapBuffers(HDC hdc)
 {
-	std::cout << "hooked";
 	return owglSwapBuffers(hdc);
 }
+
+
 // trampoline hooking
 void Hooks::Setup()
 {
 
-
+	std::cout << "attached to method\n";
 
 	
 }

@@ -2,6 +2,7 @@
 #include <thread>
 #include "sdk/Logger/Logger.h"
 #include "sdk/Memory/PatternScan.h"
+#include "sdk/Memory/Memory.h"
 
 // this gets ran multiple times
 static void MainThread(HMODULE hModule)

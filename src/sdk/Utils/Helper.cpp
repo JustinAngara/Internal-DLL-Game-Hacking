@@ -5,7 +5,7 @@ std::wstring Helper::str2wstr(const std::string& str)
     if (str.empty()) return {};
 
     int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
-    //if (size <= 0) throw std::runtime_error("MultiByteToWideChar failed");
+    if (size <= 0) throw std::runtime_error("MultiByteToWideChar failed");
 
     std::wstring result(size, 0);
     MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), &result[0], size);

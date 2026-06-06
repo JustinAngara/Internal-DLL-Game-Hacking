@@ -10,10 +10,7 @@ BOOL __stdcall hkwglSwapBuffers(HDC hdc)
 
 
 // trampoline hooking
+// implementation coming soon
 void Hooks::Setup()
-{
-
-	std::cout << "attached to method\n";
-
-	
+{	
 }

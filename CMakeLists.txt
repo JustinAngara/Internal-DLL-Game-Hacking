@@ -10,7 +10,7 @@ file(GLOB_RECURSE SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
 )
 
-add_library(ProcessHooker SHARED ${SOURCES} "src/core/Main.h")
+add_library(ProcessHooker SHARED ${SOURCES} "src/core/Main.h" "src/Game/GameManagement.h" "src/Game/Game.h" "src/Game/GameManagement.cpp" "src/Game/AssaultCube/AssaultCube.h")
 
 target_include_directories(ProcessHooker PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"

@@ -3,5 +3,4 @@
 namespace Main
 {
 	void entrypoint();
-	void assaultCubeHack();
 }

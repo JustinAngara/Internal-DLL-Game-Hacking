@@ -3,6 +3,8 @@
 #include <TlHelp32.h>
 #include <vector>
 #include <iostream>
+
+// process stuff
 DWORD Memory::GetProcId(const wchar_t* procName)
 {
     DWORD procId = 0;
@@ -32,6 +34,27 @@ uintptr_t Memory::GetModuleBase(const char* module)
 {
     uintptr_t moduleDLLBaseAddr = (uintptr_t)GetModuleHandleA(module);
     return moduleDLLBaseAddr;
+}
+
+
+
+
+// memory editing
+void Memory::Patch(BYTE* dst, BYTE* src, unsigned int size)
+{
+    DWORD oldprotect;
+    VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldprotect);
+
+    memcpy(dst, src, size);
+    VirtualProtect(dst, size, oldprotect, &oldprotect);
+}
+
+void Memory::Nop(BYTE* dst, unsigned int size)
+{
+    DWORD oldprotect;
+    VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldprotect);
+    memset(dst, NOP, size);
+    VirtualProtect(dst, size, oldprotect, &oldprotect);
 }
 
 

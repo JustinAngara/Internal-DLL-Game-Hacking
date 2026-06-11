@@ -7,7 +7,7 @@ class GameManagement
 public:
 
 	GameManagement(std::shared_ptr<Game> g)
-		: m_selectedGame(std::move(g)) { }
+		: m_selectedGame(g) { m_listOfGames.push_back(std::move(g)); }
 	~GameManagement() = default;
 	
 	const Game& getCurrentGame() const; 

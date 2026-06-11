@@ -14,8 +14,9 @@ void Main::entrypoint()
 
     // assault cube
     auto assaultCube = std::make_shared<AssaultCube>();
-    GameManagement gm(assaultCube);
-    gm.addGame(assaultCube);
+    
+    GameManagement gm{ assaultCube }; // make this the default selected
+    
     gm.runCurrentGame(); 
     
 

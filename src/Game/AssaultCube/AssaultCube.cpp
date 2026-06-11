@@ -1,5 +1,5 @@
 #include "AssaultCube.h"
-
+#include "sdk/Memory/Memory.h"
 void AssaultCube::run() const
 {
     uintptr_t moduleBase = (uintptr_t)GetModuleHandle(L"ac_client.exe");
@@ -28,15 +28,17 @@ void AssaultCube::run() const
         if (GetAsyncKeyState(VK_NUMPAD3) & 1)
         {
             bRecoil = !bRecoil;
-
+            int recoilInstrOffset   = 0x63786;
+            int recoilInstrSize     = 10;
+            BYTE* recoilBytePattern = (BYTE*)"\x50\x8D\x4C\x24\x1C\x51\x8B\xCE\xFF\xD2";
+            
             if (bRecoil)
             {
-                //mem::Nop((BYTE*)(moduleBase + 0x63786), 10);
+                Memory::Nop((BYTE*)(moduleBase + recoilInstrOffset), recoilInstrSize);
             }
             else
             {
-                //50 8D 4C 24 1C 51 8B CE FF D2 the original stack setup and call
-                //PatternScan::Patch((BYTE*)(moduleBase + 0x63786), (BYTE*)"\x50\x8D\x4C\x24\x1C\x51\x8B\xCE\xFF\xD2", 10);
+                Memory::Patch((BYTE*)(moduleBase + recoilInstrOffset), recoilBytePattern, recoilInstrSize);
             }
         }
 

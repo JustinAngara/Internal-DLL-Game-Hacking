@@ -38,23 +38,22 @@ uintptr_t Memory::GetModuleBase(const char* module)
 
 
 
-
 // memory editing
 void Memory::Patch(BYTE* dst, BYTE* src, unsigned int size)
 {
+    // temporarily set readwrite perms
     DWORD oldprotect;
     VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldprotect);
 
+    // copy into buffer
     memcpy(dst, src, size);
     VirtualProtect(dst, size, oldprotect, &oldprotect);
 }
 
 void Memory::Nop(BYTE* dst, unsigned int size)
 {
-    DWORD oldprotect;
-    VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldprotect);
-    memset(dst, NOP, size);
-    VirtualProtect(dst, size, oldprotect, &oldprotect);
+    std::vector<BYTE> nopArray(size, NOP);
+    Patch(dst, nopArray.data(), size);
 }
 
 

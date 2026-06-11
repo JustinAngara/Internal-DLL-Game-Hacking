@@ -7,7 +7,7 @@
 namespace Memory
 {
     // vars
-    int NOP = 0x90;
+    static constexpr int NOP = 0x90;
 
     // process helpers
     DWORD GetProcId(const wchar_t* procName);

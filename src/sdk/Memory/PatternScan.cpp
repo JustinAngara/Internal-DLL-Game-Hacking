@@ -17,7 +17,8 @@ uintptr_t PatternScan::FindDMAAddy(uintptr_t ptr, std::vector<unsigned int> offs
     return addr;
 }
 
-
+// IDA style scan
+// PatternScan::Scan("client.dll", "48 8B 05 ? ? ? ? 89 41 08");
 uintptr_t PatternScan::Scan(const char* module, const char* signature)
 {
     HMODULE mod = GetModuleHandleA(module);

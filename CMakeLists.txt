@@ -5,12 +5,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.c"
 )
 
-add_library(ProcessHooker SHARED ${SOURCES} "src/core/Main.h" "src/Game/GameManagement.h" "src/Game/Game.h" "src/Game/GameManagement.cpp" "src/Game/AssaultCube/AssaultCube.h")
+file(GLOB_RECURSE HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h"
+)
+
+add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "src/sdk/Math/Math.h" "src/sdk/Math/Math.inl")
 
 target_include_directories(ProcessHooker PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"

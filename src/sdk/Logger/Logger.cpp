@@ -33,10 +33,9 @@ void Logger::Log(const std::string& message, LogLevel level)
     tm* timeinfo = localtime(&now);
     char timestamp[20];
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", timeinfo);
-
     std::ostringstream entry;
     entry << "[" << timestamp << "] " << LevelToString(level) << ": " << message << "\n";
-
+    
     if (logFile.is_open())
     {
         logFile << entry.str();

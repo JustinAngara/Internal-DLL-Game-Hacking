@@ -1,6 +1,6 @@
 #include "sdk/Logger/Logger.h"
 #include "Main.h"
-#include "Game/AssaultCube/AssaultCube.h"
+#include "Game/HackedGames/AssaultCube/AssaultCube.h"
 #include "Game/Game.h"
 #include "Game/GameManagement.h"
 #include <Windows.h>

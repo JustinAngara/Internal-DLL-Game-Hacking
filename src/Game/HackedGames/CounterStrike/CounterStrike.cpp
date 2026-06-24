@@ -6,7 +6,7 @@ void CounterStrike::run() const
 	while (true)
 	{
 		// run keybinds and do stuff
-		
+		// hack manager
 
 
 	}

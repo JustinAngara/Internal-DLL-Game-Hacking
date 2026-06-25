@@ -1,6 +1,8 @@
 #pragma once
 #include "Game/Game.h"
 
+// this is just a sample of how to run games utilizing this. 
+// TODO: remove hacked games into a own project and use ProcessHooker as the library to keep the two seperate.
 class CounterStrike : public Game
 {
 public:

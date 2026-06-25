@@ -15,4 +15,12 @@ namespace Math
         m_z += arg.m_z;
         return *this;
     }
+
+    inline void Vec3::Normalize() 
+    {
+        while (m_y < -180) { m_y += 360; }
+        while (m_y > 180)  { m_y -= 360; }
+        while (m_x > 89)   { m_x  = 89;  }
+        while (m_x < -89)  { m_x  = -89; }
+    }
 }

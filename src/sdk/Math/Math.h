@@ -11,7 +11,7 @@ namespace Math
 
         Vec3 operator+(const Vec3& arg) const;
         Vec3& operator+=(const Vec3& arg);
-
+        void Normalize();
     private:
         float m_x = 0, m_y = 0, m_z = 0;
     };

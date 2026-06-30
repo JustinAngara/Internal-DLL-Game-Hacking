@@ -1,3 +1,4 @@
+
 namespace Math
 {
     inline Vec3::Vec3(float x, float y, float z)
@@ -43,5 +44,14 @@ namespace Math
         while (m_x > 89)   { m_x  = 89;  }
         while (m_x < -89)  { m_x  = -89; }
         
+    }
+
+    inline Vec3 Vec3::CalcAngle(Vec3 src, Vec3 dst)
+    {
+        Vec3 angle{};
+        angle.m_x = -atan2f(dst.m_x - src.m_x, dst.m_y - src.m_y) / M_PI * 100.0f + 180.0F;
+        //angle.m_y = asinf((dst.m_z - src.m_z) / src.Distance(dst)) * 180.0f / M_PI;
+        angle.m_z = 0;
+        return angle;
     }
 }

@@ -1,5 +1,5 @@
 #include "CounterStrike.h"
-
+#include "sdk/Math/Math.h"
 void CounterStrike::run() const 
 {
 	// run internal game loop
@@ -8,7 +8,7 @@ void CounterStrike::run() const
 		// run keybinds and do stuff
 		// hack manager
 
-
+		
 	}
 }
 

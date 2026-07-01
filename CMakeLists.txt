@@ -13,7 +13,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.inl"
 )
 
-add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "src/Game/HackedGames/CounterStrike/Recoil.cpp" "src/Game/HackedGames/CounterStrike/Recoil.h")
+add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "src/Game/HackedGames/CounterStrike/Recoil.cpp" "src/Game/HackedGames/CounterStrike/Recoil.h" "src/Obfuscation/Polymorphism/Polymorphic.h" "src/ext/ade32/ADE32.cpp" "src/ext/ade32/ADE32.h" "src/Obfuscation/Polymorphism/Polymorphic.cpp" "src/Obfuscation/Registery/ObfuscateMethods.cpp")
 
 # add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "src/sdk/Math/Math.h" "src/sdk/Math/Math.inl" "src/Game/HackedGames/CounterStrike/HackManager.h")
 

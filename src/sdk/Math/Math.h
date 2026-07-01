@@ -32,7 +32,7 @@ namespace Math
         void Divide();
         void Magnitude();
         void DotProduct();
-        Vec3 CalcAngle(Vec3 src, Vec3 dst);
+        Vec3 CalcAngle(Vec3 src, Vec3 dst); // do implementation
     private:
         float m_x = 0, m_y = 0, m_z = 0;
     };

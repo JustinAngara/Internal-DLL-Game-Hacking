@@ -13,11 +13,11 @@ void Main::entrypoint()
     freopen_s(&f, "CONOUT$", "w", stdout);
 
     // assault cube
-    auto assaultCube = std::make_shared<AssaultCube>();
+    //auto assaultCube = std::make_shared<AssaultCube>();
     
-    GameManagement gm{ assaultCube }; // make this the default selected
-    
-    gm.runCurrentGame(); 
+    //GameManagement gm{ assaultCube }; // make this the default selected
+    //gm.runCurrentGame(); 
+
     
 
     // close console

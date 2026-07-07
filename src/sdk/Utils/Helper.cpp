@@ -23,4 +23,4 @@ std::string Helper::wstr2str(const std::wstring& wstr)
     std::string result(size, 0);
     WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), (int)wstr.size(), &result[0], size, nullptr, nullptr);
     return result;
-}
+} 

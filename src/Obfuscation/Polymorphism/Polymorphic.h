@@ -1,11 +1,11 @@
 #pragma once
 
 #include <Windows.h>
-
 #include <ctime>
 #include <cstdlib>
 
-#include "ext/ade32/ADE32.h"
+#include "ext/minhook/hde/hde32.h"
+#include "ext/minhook/hde/hde64.h"
 
 class CPolymorphic
 {
@@ -25,9 +25,29 @@ private:
         return (1 + int((max - min + 1)*rand()/(RAND_MAX + 1.0)));
     }
 
+    int oplen(BYTE* address) 
+    {
+#if defined(_M_IX86)
+        hde32s hs;
+        unsigned int len = hde32_disasm((void*)address, &hs);
+        if (hs.flags & F_ERROR) return 0;
+        return len;
+
+#elif defined(_M_X64) || defined(_M_AMD64)
+        hde64s hs;
+        unsigned int len = hde64_disasm((void*)address, &hs);
+        if (hs.flags & F_ERROR) return 0;
+        return len;
+
+#else
+        return 0; 
+#endif
+    }
+
+
+    DWORD CalculateFunctionSize(DWORD_PTR dwStart);
     bool PatchOpcode(DWORD dwAddress, BYTE bytes[], unsigned int bytecount);
     void ObfuscateOpcode(DWORD dwAddress, int opcodeLen);
-    DWORD CalculateFunctionSize(DWORD dwStart);
 public:
     CPolymorphic(void);
     ~CPolymorphic(void);

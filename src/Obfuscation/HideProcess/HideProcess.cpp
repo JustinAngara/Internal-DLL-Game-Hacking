@@ -73,6 +73,7 @@ NTSTATUS WINAPI HookedNtQuerySystemInformation(
 
 void StartHook()
 {
+    // utilize logger
     void* pTarget = (void*)GetProcAddress(GetModuleHandle(L"ntdll"), "NtQuerySystemInformation");
 
     if (!pTarget)
@@ -96,7 +97,7 @@ void StartHook()
 
     if (MH_EnableHook(pTarget) != MH_OK)
     {
-        MessageBox(NULL, L"MH_EnableHook failed", L"DEBUG", MB_OK);
+        MessageBox(NULL, L"MH_EnableHook failed", L"DEBUG", MB_OK); 
         return;
     }
 

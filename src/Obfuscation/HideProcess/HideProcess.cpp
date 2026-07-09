@@ -56,8 +56,8 @@ NTSTATUS WINAPI HookedNtQuerySystemInformation(
             pNext = (PMY_SYSTEM_PROCESS_INFORMATION)((PUCHAR)pCurrent + pCurrent->NextEntryOffset);
 
             // insert your dll or list of processes to hide from.
-            if (pNext->ImageName.Buffer &&
-                !wcsncmp(pNext->ImageName.Buffer, L"notepad++.exe", pNext->ImageName.Length / sizeof(WCHAR)))
+            if (pNext->ImageName.Buffer) /* &&
+                !wcsncmp(pNext->ImageName.Buffer, L"cheatname.exe", pNext->ImageName.Length / sizeof(WCHAR))*/ 
             {
                 if (!pNext->NextEntryOffset)
                     pCurrent->NextEntryOffset = 0;

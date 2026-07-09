@@ -10,9 +10,9 @@
 // this gets ran multiple times
 static void MainThread(HMODULE hModule)
 {
-    MessageBox(NULL, L"Thread started", L"DEBUG", MB_OK);
     HideProcess::Run();
-    while (true) {}
+    MessageBox(NULL, L"hide proc", L"DEBUG", MB_OK);
+    
     Main::entrypoint();
 
 

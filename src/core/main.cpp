@@ -4,9 +4,13 @@
 #include "Game/Game.h"
 #include "Game/GameManagement.h"
 #include <Windows.h>
+#include "Gui/Gui.h"
 void Main::entrypoint()
 {
 
+    // create our gui
+    Gui g{};
+    g.setup();
     // create console
     AllocConsole();
     FILE* f;

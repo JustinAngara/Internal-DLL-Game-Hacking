@@ -31,3 +31,8 @@ target_compile_definitions(ProcessHooker PRIVATE
     UNICODE
     _UNICODE
 )
+
+
+
+add_executable(Loader loader/Main.cpp)
+add_dependencies(Loader ProcessHooker)

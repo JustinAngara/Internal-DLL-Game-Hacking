@@ -9,5 +9,6 @@ class Feature
 public:
 private:
 	std::string m_name;
-	bool m_isOn; 
+	bool m_isOn; // needs to point to somewhere in data 
+
 };

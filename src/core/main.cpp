@@ -1,6 +1,6 @@
 #include "sdk/Logger/Logger.h"
 #include "Main.h"
-#include "Game/HackedGames/AssaultCube/AssaultCube.h"
+#include "HackedGames/AssaultCube/AssaultCube.h"
 #include "Game/Game.h"
 #include "Game/GameManagement.h"
 #include <Windows.h>
@@ -8,13 +8,11 @@
 void Main::entrypoint()
 {
 
-    // create our gui
-    Gui g{};
-    g.setup();
+
     // create console
-    AllocConsole();
-    FILE* f;
-    freopen_s(&f, "CONOUT$", "w", stdout);
+    //AllocConsole();
+    //FILE* f;
+    //freopen_s(&f, "CONOUT$", "w", stdout);
 
     // assault cube
     //auto assaultCube = std::make_shared<AssaultCube>();
@@ -25,7 +23,7 @@ void Main::entrypoint()
     
 
     // close console
-    fclose(f);
-    FreeConsole();
+    //fclose(f);
+    //FreeConsole();
 }
 

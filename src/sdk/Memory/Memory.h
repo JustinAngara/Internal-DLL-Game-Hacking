@@ -6,7 +6,7 @@
 #include <vector>
 namespace Memory
 {
-    // vars
+    // vars 
     static constexpr int NOP = 0x90;
 
     // process helpers

@@ -48,6 +48,8 @@ private:
     DWORD CalculateFunctionSize(DWORD_PTR dwStart);
     bool PatchOpcode(DWORD dwAddress, BYTE bytes[], unsigned int bytecount);
     void ObfuscateOpcode(DWORD dwAddress, int opcodeLen);
+
+
 public:
     CPolymorphic(void);
     ~CPolymorphic(void);

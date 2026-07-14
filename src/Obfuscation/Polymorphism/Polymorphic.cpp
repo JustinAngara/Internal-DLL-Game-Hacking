@@ -1,6 +1,7 @@
 #include "Polymorphic.h"
 
 #include "ext/minhook/hde/hde64.h"
+#include "ext/minhook/hde/hde32.h"
 #include <iostream>
 
 void CPolymorphic::ObfuscateOpcode(DWORD dwAddress, int opcodeLen)

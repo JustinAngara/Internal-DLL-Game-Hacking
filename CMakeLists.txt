@@ -14,7 +14,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.inl"
 )
 
-add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "src/HackedGames/CounterStrike/Recoil.cpp" "src/HackedGames/CounterStrike/Recoil.h" "src/Obfuscation/Polymorphism/Polymorphic.h" "src/Obfuscation/Polymorphism/Polymorphic.cpp" "src/Obfuscation/Registery/ObfuscateMethods.cpp" "src/Obfuscation/HideProcess/HideProcess.h" "src/Obfuscation/HideProcess/HideProcess.cpp" "src/gui/Gui.h" "src/gui/Category.h" "src/gui/Feature.h" "src/ext/minhook/hde/hde64.c" "src/ext/minhook/hde/hde32.c" "src/Gui/Gui.cpp" )
+add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "src/HackedGames/CounterStrike/Recoil.cpp" "src/HackedGames/CounterStrike/Recoil.h" "src/Obfuscation/Polymorphism/Polymorphic.h" "src/Obfuscation/Polymorphism/Polymorphic.cpp" "src/Obfuscation/Registery/ObfuscateMethods.cpp" "src/Obfuscation/HideProcess/HideProcess.h" "src/Obfuscation/HideProcess/HideProcess.cpp" "src/gui/Gui.h" "src/gui/Category.h" "src/gui/Feature.h" "src/ext/minhook/hde/hde64.c" "src/ext/minhook/hde/hde32.c" "src/Gui/Gui.cpp" "src/ext/reserved_windows/ntdll/ntdll.h" )
 
 # add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "src/sdk/Math/Math.h" "src/sdk/Math/Math.inl" "src/Game/HackedGames/CounterStrike/HackManager.h")
 
@@ -31,6 +31,19 @@ target_compile_definitions(ProcessHooker PRIVATE
     UNICODE
     _UNICODE
 )
+
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    # 64-bit build detected
+    target_link_libraries(ProcessHooker PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/reserved_windows/ntdll/ntdll_x64.lib
+    )
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    # 32-bit build detected
+    target_link_libraries(ProcessHooker PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/reserved_windows/ntdll/ntdll_x86.lib
+    )
+endif()
 
 
 add_executable(Loader loader/Main.cpp )

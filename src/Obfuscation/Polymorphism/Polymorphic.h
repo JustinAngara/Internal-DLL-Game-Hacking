@@ -75,4 +75,37 @@ public:
     ~CPolymorphic(void);
 
     void Run(DWORD dwStart);
+
 };
+
+namespace Hashing
+{
+    inline uint64_t fnv1a(const uint8_t* data, size_t len) {
+        uint64_t h = 1469598103934665603ULL;
+        for (size_t i = 0; i < len; ++i) {
+            h ^= data[i];
+            h *= 1099511628211ULL;
+        }
+        return h;
+    }
+
+    inline size_t func_len(const void* fn, size_t cap = 512) {
+        const uint8_t* p = reinterpret_cast<const uint8_t*>(fn);
+        for (size_t i = 0; i < cap; ++i)
+            if (p[i] == 0xC3) return i + 1;
+        return cap;
+    }
+
+    inline uint64_t hash_func(const void* fn) {
+        const uint8_t* p = reinterpret_cast<const uint8_t*>(fn);
+        size_t len = func_len(fn);
+
+        uint64_t h = 0;
+        for (size_t i = 0; i < len; ++i)
+        {
+            h += (uint64_t)p[i] * (i + 1);   
+        }
+
+        return h;
+    }
+}

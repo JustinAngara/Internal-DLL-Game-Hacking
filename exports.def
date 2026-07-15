@@ -1,9 +1,0 @@
-LIBRARY ProcessHooker
-EXPORTS
-    export_Bhop_run
-    export_Recoil_run
-    export_CounterStrike_run
-    export_AssaultCube_run
-    export_HideProcess_Run
-    export_ObfuscationRegistry_Setup
-    export_GameManagement_run

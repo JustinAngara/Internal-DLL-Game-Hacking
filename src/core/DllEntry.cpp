@@ -33,8 +33,6 @@ static void MainThread(HMODULE hModule)
 
 	printf("Run() called\n"); // now visible
 
-	Test::Obfuscation::Run();
-	for (;;) {}
 	FreeLibraryAndExitThread(hModule, 0);
 }
 
@@ -46,7 +44,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID reserved)
 		CloseHandle(CreateThread(
 			nullptr, 0,
 			reinterpret_cast<LPTHREAD_START_ROUTINE>(MainThread),
-			hModule, 0, nullptr));
+			hModule, 0, nullptr)
+		);
 	}
 	return TRUE;
 }

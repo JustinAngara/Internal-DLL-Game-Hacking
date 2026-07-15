@@ -3,6 +3,7 @@
 #include <cstdio>
 
 #include "Obfuscation/Polymorphism/Polymorphic.h"
+#include "sdk/Logger/Logger.h"
 
 #include <Windows.h>   
 #include <cstdio>      
@@ -56,11 +57,10 @@ NOINLINE void bar_B() {
     __asm { nop };
     __asm { nop };
     int32_t s = 0;
-    __asm { mov ebp, ebp };   // 8B ED
+    __asm { mov esi, esi };   // 8B F6 — replaced ebp with esi
     for (int32_t i = 1; i <= 13; ++i) s += (i * i) - (i >> 1);
     g_sink += (uint64_t)s;
 }
-
 // ====================== hashing ===============================
 
 uint64_t fnv1a(const uint8_t* data, size_t len) {
@@ -93,19 +93,100 @@ uint64_t hash_func(const void* fn) {
 
 // ====================== driver ================================
 
-namespace Test { namespace Obfuscation {
 
+void EnumerateExports(HMODULE hModule) {
+    // DOS header → PE header
+    BYTE* base = reinterpret_cast<BYTE*>(hModule);
+    IMAGE_DOS_HEADER* dos = reinterpret_cast<IMAGE_DOS_HEADER*>(base);
+    IMAGE_NT_HEADERS* nt  = reinterpret_cast<IMAGE_NT_HEADERS*>(base + dos->e_lfanew);
+
+    // locate the export directory
+    DWORD exportRVA = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    if (!exportRVA) return; // no exports
+
+    IMAGE_EXPORT_DIRECTORY* expDir =
+        reinterpret_cast<IMAGE_EXPORT_DIRECTORY*>(base + exportRVA);
+
+    DWORD*  funcRVAs  = reinterpret_cast<DWORD*> (base + expDir->AddressOfFunctions);
+    DWORD*  nameRVAs  = reinterpret_cast<DWORD*> (base + expDir->AddressOfNames);
+    WORD*   ordinals  = reinterpret_cast<WORD*>  (base + expDir->AddressOfNameOrdinals);
+
+    for (DWORD i = 0; i < expDir->NumberOfNames; ++i) {
+        const char* name = reinterpret_cast<const char*>(base + nameRVAs[i]);
+        void*       addr = base + funcRVAs[ordinals[i]];
+
+        // follow thunk if present
+        uint8_t* p = reinterpret_cast<uint8_t*>(addr);
+        if (p[0] == 0xE9) {
+            DWORD rel = *reinterpret_cast<DWORD*>(p + 1);
+            addr = p + 5 + rel;
+        }
+
+        printf("%-40s @ %p\n", name, addr);
+    }
+}
+
+
+void RunOnDLL(const char* dllName) {
+    HMODULE hMod = GetModuleHandleA(dllName); // already loaded
+    // or: LoadLibraryA(dllName) for a DLL on disk
+
+    BYTE* base = reinterpret_cast<BYTE*>(hMod);
+    IMAGE_DOS_HEADER* dos = reinterpret_cast<IMAGE_DOS_HEADER*>(base);
+    IMAGE_NT_HEADERS* nt  = reinterpret_cast<IMAGE_NT_HEADERS*>(base + dos->e_lfanew);
+
+    DWORD exportRVA = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    if (!exportRVA) return;
+
+    IMAGE_EXPORT_DIRECTORY* expDir =
+        reinterpret_cast<IMAGE_EXPORT_DIRECTORY*>(base + exportRVA);
+
+    DWORD* funcRVAs = reinterpret_cast<DWORD*>(base + expDir->AddressOfFunctions);
+    DWORD* nameRVAs = reinterpret_cast<DWORD*>(base + expDir->AddressOfNames);
+    WORD*  ordinals = reinterpret_cast<WORD*> (base + expDir->AddressOfNameOrdinals);
+
+    FILE* f = fopen("recon.txt", "w");
+    if (!f) return;
+
+    fprintf(f, "%-40s  %-10s  %-6s  %s\n", "name", "address", "len", "sig");
+    fprintf(f, "----------------------------------------  ----------  ------  ----------------\n");
+
+    for (DWORD i = 0; i < expDir->NumberOfNames; ++i) {
+        const char* name = reinterpret_cast<const char*>(base + nameRVAs[i]);
+        void*       addr = base + funcRVAs[ordinals[i]];
+
+        uint8_t* p = reinterpret_cast<uint8_t*>(addr);
+        if (p[0] == 0xE9) {
+            DWORD rel = *reinterpret_cast<DWORD*>(p + 1);
+            addr = p + 5 + rel;
+        }
+
+        size_t   len = func_len(addr);
+        uint64_t sig = hash_func(addr);
+
+        fprintf(f, "%-40s  %p  %-6zu  %016llx\n",
+            name, addr, len, (unsigned long long)sig);
+    }
+
+    fclose(f);
+}
+
+namespace Test::Obfuscation { 
+    
     struct Entry {
         const char* name;
-        void (*fn)();
+        void*       fn;
+
     };
 
     // table lives here at namespace scope — visible to Run()
     static Entry table[] = {
-        { "foo_A", &foo_A },
-        { "bar_A", &bar_A },
-        { "foo_B", &foo_B },
-        { "bar_B", &bar_B },
+        { "foo_A", reinterpret_cast<void*>(&foo_A) },
+        { "bar_A", reinterpret_cast<void*>(&bar_A) },
+        { "foo_B", reinterpret_cast<void*>(&foo_B) },
+        { "bar_B", reinterpret_cast<void*>(&bar_B) },
+        { "logger", reinterpret_cast<void*>(&Logger::Log) },
+        { "logger", reinterpret_cast<void*>(&Logger::Log) },
     };
 
     
@@ -120,40 +201,69 @@ namespace Test { namespace Obfuscation {
         GetModuleFileNameA(hSelf, dllPath, MAX_PATH);
         char* slash = strrchr(dllPath, '\\');
         if (slash) *(slash + 1) = '\0';
-        strcat_s(dllPath, MAX_PATH, "signatures.txt");
 
-        FILE* f = fopen(dllPath, "w");
+        char outPath[MAX_PATH];
+        strcpy_s(outPath, dllPath);
+        strcat_s(outPath, MAX_PATH, "recon.txt");
+
+        FILE* f = fopen(outPath, "w");
         if (!f) return;
 
-        fprintf(f, "%-6s  %-10s  %-6s  first bytes\n", "func", "address", "len");
-        fprintf(f, "------  ----------  ------  ------------------------\n");
+        BYTE* base = reinterpret_cast<BYTE*>(hSelf);
+        IMAGE_DOS_HEADER* dos = reinterpret_cast<IMAGE_DOS_HEADER*>(base);
+        IMAGE_NT_HEADERS* nt  = reinterpret_cast<IMAGE_NT_HEADERS*>(base + dos->e_lfanew);
+
+
+        DWORD exportRVA = nt->OptionalHeader
+            .DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+
+        IMAGE_EXPORT_DIRECTORY* expDir =
+            reinterpret_cast<IMAGE_EXPORT_DIRECTORY*>(base + exportRVA);
+
+
+        if (!dos || dos->e_magic != IMAGE_DOS_SIGNATURE) { fclose(f); return; }
+        if (!nt || nt->Signature != IMAGE_NT_SIGNATURE) { fclose(f); return; }
+        if (!exportRVA) { fprintf(f, "no exports\n"); fclose(f); return; }
+        if (!expDir) { fclose(f); return; }
+
+
+        DWORD* funcRVAs = reinterpret_cast<DWORD*>(base + expDir->AddressOfFunctions);
+        DWORD* nameRVAs = reinterpret_cast<DWORD*>(base + expDir->AddressOfNames);
+        WORD*  ordinals = reinterpret_cast<WORD*> (base + expDir->AddressOfNameOrdinals);
+
+
+
+
+        fprintf(f, "module  : %s\n",    (char*)(base + expDir->Name));
+        fprintf(f, "exports : %lu\n\n", expDir->NumberOfNames);
+        fprintf(f, "%-40s  %-10s  %-6s  %-18s  %-18s  %s\n",
+            "name", "address", "len", "sig (before)", "sig (after)", "match");
+        fprintf(f, "----------------------------------------"
+            "  ----------  ------  ------------------"
+            "  ------------------  -----\n");
 
         CPolymorphic poly;
 
-        const int count = sizeof(table) / sizeof(table[0]);
-        for (int i = 0; i < count; ++i) {
+        for (DWORD i = 0; i < expDir->NumberOfNames; ++i) {
+            const char* name = reinterpret_cast<const char*>(base + nameRVAs[i]);
+            void*       addr = base + funcRVAs[ordinals[i]];
 
-            // resolve address
-            void* addr = (void*)(DWORD)table[i].fn;
-            uint8_t* p = (uint8_t*)addr;
+            // skip forwarded exports
+            DWORD rva     = funcRVAs[ordinals[i]];
+            DWORD expSize = nt->OptionalHeader
+                .DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size;
+            if (rva >= exportRVA && rva < exportRVA + expSize) continue;
 
-            // follow E9 JMP thunk (MSVC debug builds)
+            // follow thunk
+            uint8_t* p = reinterpret_cast<uint8_t*>(addr);
             if (p[0] == 0xE9) {
-                DWORD rel = *(DWORD*)(p + 1);
-                addr = (void*)((DWORD)p + 5 + rel);
-                p = (uint8_t*)addr;
+                DWORD rel = *reinterpret_cast<DWORD*>(p + 1);
+                addr = p + 5 + rel;
             }
-
-            // dump first 8 bytes so we can confirm we're at a real prologue (55 8B EC)
-            fprintf(f, "%-6s  %p  ", table[i].name, addr);
-            for (int b = 0; b < 8; ++b)
-                fprintf(f, "%02X ", p[b]);
-            fprintf(f, "\n");
 
             size_t   len    = func_len(addr);
             uint64_t before = hash_func(addr);
 
-            // mutate
             DWORD old;
             VirtualProtect(addr, len, PAGE_EXECUTE_READWRITE, &old);
             poly.Run((DWORD)addr);
@@ -161,8 +271,8 @@ namespace Test { namespace Obfuscation {
 
             uint64_t after = hash_func(addr);
 
-            fprintf(f, "       len=%-4zu  before=%016llx  after=%016llx  %s\n\n",
-                len,
+            fprintf(f, "%-40s  %p  %-6zu  %016llx  %016llx  %s\n",
+                name, addr, len,
                 (unsigned long long)before,
                 (unsigned long long)after,
                 before == after ? "SAME" : "DIFF");
@@ -171,9 +281,5 @@ namespace Test { namespace Obfuscation {
         fclose(f);
     }
 
-}} // namespace Test::Obfuscation
-
-int main() {
-    Test::Obfuscation::Run();
-    return 0;
-}
+    
+} 

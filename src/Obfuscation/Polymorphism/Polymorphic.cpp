@@ -1,186 +1,175 @@
 #include "Polymorphic.h"
-
-#include "ext/minhook/hde/hde64.h"
-#include "ext/minhook/hde/hde32.h"
 #include <iostream>
 
 void CPolymorphic::ObfuscateOpcode(DWORD dwAddress, int opcodeLen)
 {
-    if(opcodeLen == 1)
+    uint8_t b1 = this->Read(dwAddress);
+
+    switch (opcodeLen)
     {
-        if ((this->randomize(1, 2) == 1) && (this->Read(dwAddress) == 0xC3 && this->Read(dwAddress + 1) == 0xCC && this->Read(dwAddress + 2) == 0xCC)) // retn -> retn 0
-        {
-            std::cout << std::hex << "retn -> retn 0" << dwAddress << '\n';
-
-            this->Write(dwAddress, 0xC2);
-            this->Write(dwAddress + 1, 0x00);
-            this->Write(dwAddress + 2, 0x00);
-        }
-        else if (this->Read(dwAddress) == 0xCC) // int 3
-        {
-            if (this->Read(dwAddress + 1) == 0xCC)
-            {
-                if (this->randomize(1, 10) > 5)
-                {
-                    std::cout << std::hex << "0xCC -> mov reg, reg" << dwAddress << '\n';
-
-                    this->Write(dwAddress, 0x8B); // mov
-                    this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-                }
-                else
-                {
-                    std::cout << std::hex << "0xCC -> rand at 0x" << dwAddress << '\n';
-
-                    this->Write(dwAddress, this->randomize(0, 0xFF));
-                }
-            }
-            else
-            {
-                std::cout << std::hex << "0xCC -> rand at 0x" << dwAddress << '\n';
-
-                this->Write(dwAddress, this->randomize(0, 0xFF));
-            }
-        }
-        else if (this->Read(dwAddress) == 0x90 && this->Read(dwAddress + 1) == 0x90) // nop
-        {
-            std::cout << std::hex << "0x90 0x90 -> mov reg, reg at 0x" << dwAddress << '\n';
-
-            this->Write(dwAddress, 0x8B); // mov
-            this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-        }
+    case 1: this->Mutate1Byte(dwAddress, b1); break;
+    case 2: this->Mutate2Byte(dwAddress, b1); break;
+    case 3: this->Mutate3Byte(dwAddress, b1); break;
+    case 5: this->Mutate5Byte(dwAddress, b1); break;
+    case 6: this->Mutate6Byte(dwAddress, b1); break;
+    default: break;
     }
-    else if (opcodeLen == 2)
-    {
-        if (this->Read(dwAddress) == 0x8B) // mov
-        {
-            if (this->Read(dwAddress + 1) == 0xC0) // mov eax, eax
-            {
-                std::cout << "patched mov eax, eax" << std::endl;
-
-                if (this->randomize(1, 10) > 4)
-                {
-                    this->Write(dwAddress, 0x8B); // mov
-                    this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-                }
-                else
-                {
-                    this->Write(dwAddress, 0x90); // nop
-                    this->Write(dwAddress + 1, 0x90); // nop
-                }
-            }
-            else if (this->Read(dwAddress + 1) == 0xDB) // mov ebx, ebx
-            {
-                std::cout << "patched mov ebx, ebx" << std::endl;
-
-                if (this->randomize(1, 10) > 4)
-                {
-                    this->Write(dwAddress, 0x8B); // mov
-                    this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-                }
-                else
-                {
-                    this->Write(dwAddress, 0x90); // nop
-                    this->Write(dwAddress + 1, 0x90); // nop
-                }
-            }
-            else if (this->Read(dwAddress + 1) == 0xC9) // mov ecx, ecx
-            {
-                std::cout << "patched mov ecx, ecx" << std::endl;
-
-                if (this->randomize(1, 10) > 4)
-                {
-                    this->Write(dwAddress, 0x8B); // mov
-                    this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-                }
-                else
-                {
-                    this->Write(dwAddress, 0x90); // nop
-                    this->Write(dwAddress + 1, 0x90); // nop
-                }
-            }
-            else if (this->Read(dwAddress + 1) == 0xD2) // mov edx, edx
-            {
-                std::cout << "patched mov edx, edx" << std::endl;
-
-                if (this->randomize(1, 10) > 4)
-                {
-                    this->Write(dwAddress, 0x8B); // mov
-                    this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-                }
-                else
-                {
-                    this->Write(dwAddress, 0x90); // nop
-                    this->Write(dwAddress + 1, 0x90); // nop
-                }
-            }
-            else if (this->Read(dwAddress + 1) == 0xE4) // mov esp, esp
-            {
-                std::cout << "patched mov esp, esp" << std::endl;
-
-                if (this->randomize(1, 10) > 4)
-                {
-                    this->Write(dwAddress, 0x8B); // mov
-                    this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-                }
-                else
-                {
-                    this->Write(dwAddress, 0x90); // nop
-                    this->Write(dwAddress + 1, 0x90); // nop
-                }
-            }
-            else if (this->Read(dwAddress + 1) == 0xED) // mov ebp, ebp
-            {
-                std::cout << "patched mov ebp, ebp" << std::endl;
-
-                if (this->randomize(1, 10) > 4)
-                {
-                    this->Write(dwAddress, 0x8B); // mov
-                    this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-                }
-                else
-                {
-                    this->Write(dwAddress, 0x90); // nop
-                    this->Write(dwAddress + 1, 0x90); // nop
-                }
-            }
-            else if (this->Read(dwAddress + 1) == 0xF6) // mov esi, esi
-            {
-                std::cout << "patched mov esi, esi" << std::endl;
-
-                if (this->randomize(1, 10) > 4)
-                {
-                    this->Write(dwAddress, 0x8B); // mov
-                    this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-                }
-                else
-                {
-                    this->Write(dwAddress, 0x90); // nop
-                    this->Write(dwAddress + 1, 0x90); // nop
-                }
-            }
-            else if (this->Read(dwAddress + 1) == 0xFF) // mov edi, edi
-            {
-                std::cout << "patched mov edi, edi" << std::endl;
-
-                if (this->randomize(1, 10) > 4)
-                {
-                    this->Write(dwAddress, 0x8B); // mov
-                    this->Write(dwAddress + 1, regs32[this->randomize(0, 7)]); // reg
-                }
-                else
-                {
-                    this->Write(dwAddress, 0x90); // nop
-                    this->Write(dwAddress + 1, 0x90); // nop
-                }
-            }
-        }
-
-
-    }
-
 }
 
 
+void CPolymorphic::Mutate1Byte(uint32_t dwAddress, uint8_t b1)
+{
+    if (b1 == 0xCC) 
+    {
+        this->Write(dwAddress, safe1ByteJunk[this->randomize(0, 3)]);
+    }
+}
+
+void CPolymorphic::Mutate2Byte(uint32_t dwAddress, uint8_t b1)
+{
+    uint8_t b2 = this->Read(dwAddress + 1);
+
+    bool isRegToReg = (b2 & 0xC0) == 0xC0; // Mod == 11
+    uint8_t reg = (b2 >> 3) & 0x07;
+    uint8_t rm = b2 & 0x07;
+    bool isSameReg = (reg == rm);
+
+    // PUSH/POP <-> MOV
+    if ((b1 & 0xF8) == 0x50 && (b2 & 0xF8) == 0x58) 
+    {
+        uint8_t src = b1 & 0x07;
+        uint8_t dst = b2 & 0x07;
+        this->Write(dwAddress, 0x8B); 
+        this->Write(dwAddress + 1, 0xC0 | (dst << 3) | src);
+    }
+    else if (isRegToReg)
+    {
+        // DIRECTION BIT FLIPPER & MOV PROXY
+        if (b1 == 0x8B || b1 == 0x89) 
+        {
+            if (this->randomize(0, 1) == 1 && reg != 4 && rm != 4) 
+            {
+                uint8_t src = (b1 == 0x8B) ? rm : reg;
+                uint8_t dst = (b1 == 0x8B) ? reg : rm;
+                this->Write(dwAddress, 0x50 | src); // PUSH src
+                this->Write(dwAddress + 1, 0x58 | dst); // POP dst
+            }
+            else
+            {
+                this->Write(dwAddress, (b1 == 0x8B) ? 0x89 : 0x8B);
+                this->Write(dwAddress + 1, 0xC0 | (rm << 3) | reg);
+            }
+        }
+        // ALU DIRECTION BIT FLIPPER
+        else
+        {
+            const uint8_t aluPairs[][2] = {
+                {0x03, 0x01}, {0x0B, 0x09}, {0x23, 0x21}, 
+                {0x2B, 0x29}, {0x33, 0x31}, {0x3B, 0x39} 
+            };
+
+            for (int i = 0; i < 6; i++) {
+                if (b1 == aluPairs[i][0] || b1 == aluPairs[i][1]) {
+                    uint8_t new_b1 = (b1 == aluPairs[i][0]) ? aluPairs[i][1] : aluPairs[i][0];
+                    this->Write(dwAddress, new_b1);
+                    this->Write(dwAddress + 1, 0xC0 | (rm << 3) | reg);
+                    break;
+                }
+            }
+        }
+
+        // LOGIC IDENTITY TRIAD & ZEROING
+        if (isSameReg) 
+        {
+            if (b1 == 0x85 || b1 == 0x09 || b1 == 0x21) 
+            {
+                uint8_t equivalents[] = {0x85, 0x09, 0x21};
+                this->Write(dwAddress, equivalents[this->randomize(0, 2)]);
+            }
+            else if (b1 == 0x31 || b1 == 0x33 || b1 == 0x29 || b1 == 0x2B) 
+            {
+                uint8_t zeroes[] = {0x31, 0x33, 0x29, 0x2B};
+                this->Write(dwAddress, zeroes[this->randomize(0, 3)]);
+            }
+        }
+    }
+}
+
+void CPolymorphic::Mutate3Byte(uint32_t dwAddress, uint8_t b1)
+{
+    uint8_t b2 = this->Read(dwAddress + 1);
+    uint8_t b3 = this->Read(dwAddress + 2);
+
+    if (b1 == 0x83) 
+    {
+        uint8_t op = (b2 >> 3) & 0x07;
+        uint8_t rm = b2 & 0x07;
+
+        if (op == 0) // ADD
+        {
+            this->Write(dwAddress + 1, (b2 & 0xC7) | (5 << 3)); // change to SUB
+            this->Write(dwAddress + 2, (uint8_t)(~b3 + 1));     // negate imm8
+        }
+        else if (op == 5) // SUB
+        {
+            this->Write(dwAddress + 1, (b2 & 0xC7) | (0 << 3)); // change to ADD
+            this->Write(dwAddress + 2, (uint8_t)(~b3 + 1));     // negate imm8
+        }
+        else if (op == 7 && b3 == 0x00 && (b2 & 0xC0) == 0xC0) // CMP reg, 0
+        {
+            this->Write(dwAddress, 0x85); // TEST
+            this->Write(dwAddress + 1, 0xC0 | (rm << 3) | rm);
+            this->Write(dwAddress + 2, 0x90);
+        }
+    }
+}
+
+void CPolymorphic::Mutate5Byte(uint32_t dwAddress, uint8_t b1)
+{
+    uint8_t b2 = this->Read(dwAddress + 1);
+
+    if (b1 == 0x05 || b1 == 0x2D) // ADD/SUB EAX, imm32
+    {
+        uint8_t b3 = this->Read(dwAddress + 2);
+        uint8_t b4 = this->Read(dwAddress + 3);
+        uint8_t b5 = this->Read(dwAddress + 4);
+
+        uint32_t imm = (b5 << 24) | (b4 << 16) | (b3 << 8) | b2;
+        uint32_t negImm = ~imm + 1;
+
+        this->Write(dwAddress, (b1 == 0x05) ? 0x2D : 0x05);
+        this->Write(dwAddress + 1, negImm & 0xFF);
+        this->Write(dwAddress + 2, (negImm >> 8) & 0xFF);
+        this->Write(dwAddress + 3, (negImm >> 16) & 0xFF);
+        this->Write(dwAddress + 4, (negImm >> 24) & 0xFF);
+    }
+}
+
+void CPolymorphic::Mutate6Byte(uint32_t dwAddress, uint8_t b1)
+{
+    if (b1 == 0x81) 
+    {
+        uint8_t b2 = this->Read(dwAddress + 1);
+        uint8_t op = (b2 >> 3) & 0x07;
+
+        if (op == 0 || op == 5) 
+        {
+            uint8_t b3 = this->Read(dwAddress + 2);
+            uint8_t b4 = this->Read(dwAddress + 3);
+            uint8_t b5 = this->Read(dwAddress + 4);
+            uint8_t b6 = this->Read(dwAddress + 5);
+
+            uint32_t imm = (b6 << 24) | (b5 << 16) | (b4 << 8) | b3;
+            uint32_t negImm = ~imm + 1;
+
+            this->Write(dwAddress + 1, (op == 0) ? ((b2 & 0xC7) | (5 << 3)) : ((b2 & 0xC7) | (0 << 3)));
+            this->Write(dwAddress + 2, negImm & 0xFF);
+            this->Write(dwAddress + 3, (negImm >> 8) & 0xFF);
+            this->Write(dwAddress + 4, (negImm >> 16) & 0xFF);
+            this->Write(dwAddress + 5, (negImm >> 24) & 0xFF);
+        }
+    }
+}
 
 void CPolymorphic::Run(DWORD dwStart)
 {

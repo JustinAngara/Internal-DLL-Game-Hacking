@@ -13,17 +13,23 @@ class CPolymorphic
 {
 private:
 
+#if defined(_M_X64) || defined(__x86_64__)
     const uint8_t junk2[4][2] = {
-        {0x8B, 0xC0}, {0x8B, 0xDB}, {0x87, 0xC9}, {0x66, 0x90}
-    };
-
+        {0x8A, 0xC0}, {0x8A, 0xDB}, {0x8A, 0xC9}, {0x66, 0x90}};
     const uint8_t junk3[4][3] = {
-        {0x8D, 0x76, 0x00}, {0x8D, 0x7F, 0x00}, {0x8D, 0x40, 0x00}, {0x0F, 0x1F, 0x00}
-    };
-
+        {0x0F, 0x1F, 0xC0}, {0x0F, 0x1F, 0xC1}, {0x0F, 0x1F, 0xC2}, {0x0F, 0x1F, 0xC3}};
     const uint8_t safe1ByteJunk[4] = {
-        0x90, 0x98, 0x99, 0xF5 // NOP, CBW, CWD, CMC
-    };
+        0x90, 0xF8, 0xF9, 0xF5}; // NOP, CLC, STC, CMC
+#else
+    const uint8_t junk2[4][2] = {
+        {0x8B, 0xC0}, {0x8B, 0xDB}, {0x87, 0xC9}, {0x66, 0x90}};
+    const uint8_t junk3[4][3] = {
+        {0x8D, 0x76, 0x00}, {0x8D, 0x7F, 0x00}, {0x8D, 0x40, 0x00}, {0x0F, 0x1F, 0x00}};
+    const uint8_t safe1ByteJunk[4] = {
+        0x90, 0x98, 0x99, 0xF5}; // NOP, CBW, CWD, CMC
+#endif
+
+
 
     unsigned char regs32[8];
 
@@ -64,11 +70,11 @@ private:
     bool PatchOpcode(DWORD dwAddress, BYTE bytes[], unsigned int bytecount);
     void ObfuscateOpcode(DWORD dwAddress, int opcodeLen);
 
-    void Mutate1Byte(uint32_t dwAddress, uint8_t b1);
-    void Mutate2Byte(uint32_t dwAddress, uint8_t b1);
-    void Mutate3Byte(uint32_t dwAddress, uint8_t b1);
-    void Mutate5Byte(uint32_t dwAddress, uint8_t b1);
-    void Mutate6Byte(uint32_t dwAddress, uint8_t b1);
+    void Mutate1Byte(uintptr_t dwAddress, uint8_t b1);
+    void Mutate2Byte(uintptr_t dwAddress, uint8_t b1);
+    void Mutate3Byte(uintptr_t dwAddress, uint8_t b1);
+    void Mutate5Byte(uintptr_t dwAddress, uint8_t b1);
+    void Mutate6Byte(uintptr_t dwAddress, uint8_t b1);
 
 public:
     CPolymorphic(void);

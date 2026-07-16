@@ -1,17 +1,30 @@
 
 #include "NtDllHandler.h"
+#include "ntdll.h"
 #include <Windows.h>
+#include <TlHelp32.h>
 
 // documentation
 // char* modBase2 = GetModuleBaseAddressInternalPEB(L"ntdll.dll");
-
 PEB NtDllHandler::GetPEBExternal(HANDLE hProc)
 {
 	PROCESS_BASIC_INFORMATION pbi;
 	PEB peb = { 0 };
 
+	HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
+
+	if (hNtdll == NULL) 
+	{
+		return peb; 
+	}
+
 	tNtQueryInformationProcess NtQueryInformationProcess =
-		(tNtQueryInformationProcess)GetProcAddress(GetModuleHandle("ntdll.dll"), "NtQueryInformationProcess");
+		(tNtQueryInformationProcess)GetProcAddress(hNtdll, "NtQueryInformationProcess");
+
+	if (NtQueryInformationProcess == NULL) 
+	{
+		return peb;
+	}
 
 	NTSTATUS status = NtQueryInformationProcess(hProc, ProcessBasicInformation, &pbi, sizeof(pbi), 0);
 	if (NT_SUCCESS(status))
@@ -21,6 +34,7 @@ PEB NtDllHandler::GetPEBExternal(HANDLE hProc)
 
 	return peb;
 }
+
 
 PEB* NtDllHandler::GetPEBInternal()
 {
@@ -66,3 +80,4 @@ char* NtDllHandler::GetModuleBaseAddressInternalPEB(const wchar_t* modName)
 
 	return (char*)modEntry->DllBase;
 }
+

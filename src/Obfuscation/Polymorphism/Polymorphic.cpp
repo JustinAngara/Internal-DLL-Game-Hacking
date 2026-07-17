@@ -1,303 +1,134 @@
 #include "Polymorphic.h"
 #include <iostream>
 
-void CPolymorphic::ObfuscateOpcode(DWORD dwAddress, int opcodeLen)
+void CPolymorphic::ObfuscateOpcode(uintptr_t dwAddress)
 {
-    uint8_t b1 = this->Read(dwAddress);
+    uintptr_t a = dwAddress;
 
-    switch (opcodeLen)
+    bool pfx66 = false, pfxF2 = false, pfxF3 = false;
+
+    // --- peel legacy prefixes (bounded; real instrs have <=4) ---
+    for (int i = 0; i < 4; ++i) {
+        uint8_t b = this->Read(a);
+        if      (b == 0x66) { pfx66 = true; a++; }
+        else if (b == 0xF2) { pfxF2 = true; a++; }
+        else if (b == 0xF3) { pfxF3 = true; a++; }
+        else if (b == 0x2E || b == 0x36 || b == 0x3E ||    // segment overrides
+            b == 0x26 || b == 0x64 || b == 0x65 ||
+            b == 0x67)                 { a++; }        // addr-size
+        else break;
+    }
+
+    // --- REX must be the LAST prefix, immediately before the opcode ---
+    uint8_t rex = 0;
+#if defined(_M_X64) || defined(__x86_64__)
     {
-    case 1: this->Mutate1Byte(dwAddress, b1); break;
-    case 2: this->Mutate2Byte(dwAddress, b1); break;
-    case 3: this->Mutate3Byte(dwAddress, b1); break;
-    case 5: this->Mutate5Byte(dwAddress, b1); break;
-    case 6: this->Mutate6Byte(dwAddress, b1); break;
+        uint8_t b = this->Read(a);
+        if ((b & 0xF0) == 0x40) { rex = b; a++; }
+    }
+#endif
+
+    uint8_t op = this->Read(a);
+    // `a` now points AT the opcode; hand that to the handlers so their
+    // internal "skip REX" logic still works (pass dwAddress, they re-find it).
+
+    // ---- two-byte (0F) opcode space ----
+    if (op == 0x0F) {
+        this->MutateTwoByte(dwAddress, pfx66, pfxF2, pfxF3);
+        return;
+    }
+
+    // ---- one-byte space ----
+    switch (op)
+    {
+    // 32/16-bit reg-to-reg ALU + MOV + TEST  (pfx66 -> 16-bit, same opcodes)
+    case 0x89: case 0x8B:
+    case 0x01: case 0x03: case 0x09: case 0x0B:
+    case 0x21: case 0x23: case 0x29: case 0x2B:
+    case 0x31: case 0x33: case 0x39: case 0x3B:
+    case 0x85:
+        this->Mutate2Byte(dwAddress, this->Read(dwAddress));                        break;
+
+     // 8-bit reg-to-reg ALU + MOV + TEST
+    case 0x00: case 0x02: case 0x08: case 0x0A:
+    case 0x20: case 0x22: case 0x28: case 0x2A:
+    case 0x30: case 0x32: case 0x38: case 0x3A:
+    case 0x84: case 0x88: case 0x8A:
+        this->Mutate8BitRegToReg(dwAddress, this->Read(dwAddress));                 break;
+
+    case 0x80: this->Mutate80(dwAddress,    this->Read(dwAddress));                 break;
+    case 0x81: this->Mutate6Byte(dwAddress, this->Read(dwAddress));                 break;
+    case 0x83: this->Mutate3Byte(dwAddress, this->Read(dwAddress));                 break;
+    case 0x05: case 0x2D: this->Mutate5Byte(dwAddress, this->Read(dwAddress));      break;
+    case 0x04: case 0x2C: this->Mutate8BitAccImm(dwAddress, this->Read(dwAddress)); break;
+    case 0xCC: this->Mutate1Byte(dwAddress, this->Read(dwAddress));                 break;
+    
     default: break;
     }
 }
 
 
-void CPolymorphic::Mutate1Byte(uintptr_t dwAddress, uint8_t b1)
+
+bool CPolymorphic::IsRelocatable(uintptr_t start, size_t len)
 {
-    if (b1 == 0xCC) 
+    uintptr_t cur = start;
+    uintptr_t end = start + len;
+
+    while (cur < end)
     {
-        this->Write(dwAddress, safe1ByteJunk[this->randomize(0, 3)]);
+        hde64s hs;
+        unsigned int ilen = hde64_disasm((void*)cur, &hs);
+        if ((hs.flags & F_ERROR) || ilen == 0)
+            return false;                      // can't decode -> refuse
+
+        uint8_t op = hs.opcode;
+
+        // Relative branches (one-byte space):
+        if (op == 0xE8 || op == 0xE9 || op == 0xEB ||        // call/jmp rel
+            (op >= 0x70 && op <= 0x7F) ||                    // jcc rel8
+            (op >= 0xE0 && op <= 0xE3))                      // loop*/jrcxz
+            return false;
+
+        // Relative branches (two-byte space): 0F 80..8F jcc rel32
+        if (op == 0x0F && hs.opcode2 >= 0x80 && hs.opcode2 <= 0x8F)
+            return false;
+
+        // RIP-relative memory operand: modrm mod=00, rm=101 (64-bit).
+        if ((hs.flags & F_MODRM) && hs.modrm_mod == 0x00 && hs.modrm_rm == 0x05)
+            return false;
+
+        cur += ilen;
     }
-}
-
-void CPolymorphic::Mutate2Byte(uintptr_t dwAddress, uint8_t b1)
-{
-    uint8_t opcode = b1;
-    uintptr_t opAddr = dwAddress;
-    uint8_t rex = 0;
-
-#if defined(_M_X64) || defined(__x86_64__)
-    // Detect and preserve REX prefix (0x40 - 0x4F)
-    if ((b1 & 0xF0) == 0x40) 
-    {
-        rex = b1;
-        opcode = this->Read(dwAddress + 1);
-        opAddr = dwAddress + 1;
-    }
-#endif
-
-    uint8_t b2 = this->Read(opAddr + 1);
-    bool isRegToReg = (b2 & 0xC0) == 0xC0; // Mod == 11
-    uint8_t reg = (b2 >> 3) & 0x07;
-    uint8_t rm = b2 & 0x07;
-    bool isSameReg = (reg == rm);
-
-#if !defined(_M_X64) && !defined(__x86_64__)
-    // PUSH/POP <-> MOV (x86 ONLY)
-    // Disabled in x64: PUSH/POP r64 is 2 bytes, but MOV r64 requires a 3-byte REX prefix.
-    // In-place mutation is impossible here due to size mismatch.
-    if ((opcode & 0xF8) == 0x50 && (b2 & 0xF8) == 0x58) 
-    {
-        uint8_t src = opcode & 0x07;
-        uint8_t dst = b2 & 0x07;
-        this->Write(dwAddress, 0x8B); 
-        this->Write(dwAddress + 1, 0xC0 | (dst << 3) | src);
-    }
-    else 
-#endif
-        if (isRegToReg)
-        {
-            // DIRECTION BIT FLIPPER & MOV PROXY
-            if (opcode == 0x8B || opcode == 0x89) 
-            {
-#if !defined(_M_X64) && !defined(__x86_64__)
-                if (this->randomize(0, 1) == 1 && reg != 4 && rm != 4) 
-                {
-                    uint8_t src = (opcode == 0x8B) ? rm : reg;
-                    uint8_t dst = (opcode == 0x8B) ? reg : rm;
-                    this->Write(dwAddress, 0x50 | src); // PUSH src
-                    this->Write(dwAddress + 1, 0x58 | dst); // POP dst
-                }
-                else
-#endif
-                {
-                    this->Write(opAddr, (opcode == 0x8B) ? 0x89 : 0x8B);
-                    this->Write(opAddr + 1, 0xC0 | (rm << 3) | reg);
-
-#if defined(_M_X64) || defined(__x86_64__)
-                    // If swapping reg/rm in x64, we MUST swap REX.R and REX.B bits
-                    if (rex) 
-                    {
-                        uint8_t rexR = (rex & 0x04) >> 2;
-                        uint8_t rexB = (rex & 0x01);
-                        this->Write(dwAddress, (rex & 0xFA) | (rexB << 2) | rexR);
-                    }
-#endif
-                }
-            }
-            // ALU DIRECTION BIT FLIPPER
-            else
-            {
-                const uint8_t aluPairs[][2] = {
-                    {0x03, 0x01}, {0x0B, 0x09}, {0x23, 0x21}, 
-                    {0x2B, 0x29}, {0x33, 0x31}, {0x3B, 0x39} 
-                };
-
-                for (int i = 0; i < 6; i++) {
-                    if (opcode == aluPairs[i][0] || opcode == aluPairs[i][1]) {
-                        uint8_t new_opcode = (opcode == aluPairs[i][0]) ? aluPairs[i][1] : aluPairs[i][0];
-                        this->Write(opAddr, new_opcode);
-                        this->Write(opAddr + 1, 0xC0 | (rm << 3) | reg);
-
-#if defined(_M_X64) || defined(__x86_64__)
-                        if (rex) 
-                        {
-                            uint8_t rexR = (rex & 0x04) >> 2;
-                            uint8_t rexB = (rex & 0x01);
-                            this->Write(dwAddress, (rex & 0xFA) | (rexB << 2) | rexR);
-                        }
-#endif
-                        break;
-                    }
-                }
-            }
-
-            // LOGIC IDENTITY TRIAD & ZEROING
-            if (isSameReg) 
-            {
-                if (opcode == 0x85 || opcode == 0x09 || opcode == 0x21) 
-                {
-                    uint8_t equivalents[] = {0x85, 0x09, 0x21};
-                    this->Write(opAddr, equivalents[this->randomize(0, 2)]);
-                }
-                else if (opcode == 0x31 || opcode == 0x33 || opcode == 0x29 || opcode == 0x2B) 
-                {
-                    uint8_t zeroes[] = {0x31, 0x33, 0x29, 0x2B};
-                    this->Write(opAddr, zeroes[this->randomize(0, 3)]);
-                }
-            }
-        }
-}
-
-
-void CPolymorphic::Mutate3Byte(uintptr_t dwAddress, uint8_t b1)
-{
-    uint8_t opcode = b1;
-    uintptr_t opAddr = dwAddress;
-    uint8_t rex = 0;
-
-#if defined(_M_X64) || defined(__x86_64__)
-    if ((b1 & 0xF0) == 0x40) 
-    {
-        rex = b1;
-        opcode = this->Read(dwAddress + 1);
-        opAddr = dwAddress + 1;
-    }
-#endif
-
-    uint8_t b2 = this->Read(opAddr + 1);
-    uint8_t b3 = this->Read(opAddr + 2);
-
-    if (opcode == 0x83) 
-    {
-        uint8_t op = (b2 >> 3) & 0x07;
-        uint8_t rm = b2 & 0x07;
-
-        if (op == 0) // ADD
-        {
-            this->Write(opAddr + 1, (b2 & 0xC7) | (5 << 3)); // change to SUB
-            this->Write(opAddr + 2, (uint8_t)(~b3 + 1));     // negate imm8
-        }
-        else if (op == 5) // SUB
-        {
-            this->Write(opAddr + 1, (b2 & 0xC7) | (0 << 3)); // change to ADD
-            this->Write(opAddr + 2, (uint8_t)(~b3 + 1));     // negate imm8
-        }
-        else if (op == 7 && b3 == 0x00 && (b2 & 0xC0) == 0xC0) // CMP reg, 0
-        {
-            this->Write(opAddr, 0x85); // TEST
-            this->Write(opAddr + 1, 0xC0 | (rm << 3) | rm);
-            this->Write(opAddr + 2, 0x90);
-
-#if defined(_M_X64) || defined(__x86_64__)
-            if (rex) 
-            {
-                uint8_t rexB = (rex & 0x01);
-                this->Write(dwAddress, (rex & 0xFB) | (rexB << 2)); // copy REX.B into REX.R
-            }
-#endif
-        }
-    }
-}
-
-void CPolymorphic::Mutate5Byte(uintptr_t dwAddress, uint8_t b1){
-    uint8_t opcode = b1;
-    uintptr_t opAddr = dwAddress;
-
-#if defined(_M_X64) || defined(__x86_64__)
-    if ((b1 & 0xF0) == 0x40) 
-    {
-        opcode = this->Read(dwAddress + 1);
-        opAddr = dwAddress + 1;
-    }
-#endif
-
-    uint8_t b2 = this->Read(opAddr + 1);
-
-    if (opcode == 0x05 || opcode == 0x2D) // ADD/SUB EAX, imm32
-    {
-        uint8_t b3 = this->Read(opAddr + 2);
-        uint8_t b4 = this->Read(opAddr + 3);
-        uint8_t b5 = this->Read(opAddr + 4);
-
-        uint32_t imm = (b5 << 24) | (b4 << 16) | (b3 << 8) | b2;
-        uint32_t negImm = ~imm + 1;
-
-        this->Write(opAddr, (opcode == 0x05) ? 0x2D : 0x05);
-        this->Write(opAddr + 1, negImm & 0xFF);
-        this->Write(opAddr + 2, (negImm >> 8) & 0xFF);
-        this->Write(opAddr + 3, (negImm >> 16) & 0xFF);
-        this->Write(opAddr + 4, (negImm >> 24) & 0xFF);
-    }
+    return true;
 }
 
 
 
 
-void CPolymorphic::Mutate6Byte(uintptr_t dwAddress, uint8_t b1)
-{
-    uint8_t opcode = b1;
-    uintptr_t opAddr = dwAddress;
-
-#if defined(_M_X64) || defined(__x86_64__)
-    if ((b1 & 0xF0) == 0x40) 
-    {
-        opcode = this->Read(dwAddress + 1);
-        opAddr = dwAddress + 1;
-    }
-#endif
-
-    if (opcode == 0x81) 
-    {
-        uint8_t b2 = this->Read(opAddr + 1);
-        uint8_t op = (b2 >> 3) & 0x07;
-
-        if (op == 0 || op == 5) 
-        {
-            uint8_t b3 = this->Read(opAddr + 2);
-            uint8_t b4 = this->Read(opAddr + 3);
-            uint8_t b5 = this->Read(opAddr + 4);
-            uint8_t b6 = this->Read(opAddr + 5);
-
-            uint32_t imm = (b6 << 24) | (b5 << 16) | (b4 << 8) | b3;
-            uint32_t negImm = ~imm + 1;
-
-            this->Write(opAddr + 1, (op == 0) ? ((b2 & 0xC7) | (5 << 3)) : ((b2 & 0xC7) | (0 << 3)));
-            this->Write(opAddr + 2, negImm & 0xFF);
-            this->Write(opAddr + 3, (negImm >> 8) & 0xFF);
-            this->Write(opAddr + 4, (negImm >> 16) & 0xFF);
-            this->Write(opAddr + 5, (negImm >> 24) & 0xFF);
-        }
-    }
-}
-
-void CPolymorphic::Run(DWORD dwStart)
+void CPolymorphic::Run(uintptr_t dwStart)
 {
     DWORD dwLength = CalculateFunctionSize(dwStart);
-    DWORD dwCurrent = dwStart;
-    MEMORY_BASIC_INFORMATION mbi;
+    if (dwLength == 0 || dwLength > 0x4000)
+        return;
 
-    while (true)
+    uintptr_t dwCurrent = dwStart;
+    uintptr_t hardEnd   = dwStart + dwLength;
+
+    // harness is responsible for making [dwStart, hardEnd) writable
+    while (dwCurrent < hardEnd)
     {
-        VirtualQuery((void*)dwCurrent, &mbi, sizeof(mbi));
+        int nOpcodeLen = oplen((BYTE*)dwCurrent);
 
-        // Check if the memory page is mapped and accessible
-        if (mbi.State == MEM_COMMIT && mbi.Protect != 0x1)
-        {
-            DWORD prevAccess, newAccess, startAddress(dwCurrent);
+        // desync -> stop
+        if (nOpcodeLen <= 0) break;
 
-            // Enable writing access to the code
-            VirtualProtect((PBYTE)dwCurrent, ((DWORD)mbi.BaseAddress + mbi.RegionSize) - startAddress, PAGE_EXECUTE_READWRITE, &prevAccess);
+        // spill -> stop
+        if (dwCurrent + nOpcodeLen > hardEnd) break;   
 
-            while ((dwCurrent < (DWORD)mbi.BaseAddress + static_cast<DWORD>(mbi.RegionSize)) && (dwCurrent < dwStart + dwLength))
-            {
-                int nOpcodeLen = oplen((BYTE*)dwCurrent);
-
-                if (nOpcodeLen > 0)
-                {
-                    this->ObfuscateOpcode(dwCurrent, nOpcodeLen);
-                    dwCurrent += nOpcodeLen;
-                }
-                else
-                    dwCurrent++;
-            }
-
-            // Apply old access to the code
-            VirtualProtect((PBYTE)startAddress, ((DWORD)mbi.BaseAddress + mbi.RegionSize) - startAddress, prevAccess, &newAccess);
-        }
-        else
-            dwCurrent = (DWORD)mbi.BaseAddress + mbi.RegionSize + 0x1; // Go to the next region
-
-        if (dwCurrent >= dwStart + dwLength)
-            break;
+        this->ObfuscateOpcode(dwCurrent);
+        dwCurrent += nOpcodeLen;
     }
 }
-
 
 
 CPolymorphic::CPolymorphic(void)
@@ -374,11 +205,7 @@ DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart) {
 
     while (dwLength < dwMaxBytes) {
         BYTE currentByte = *(BYTE*)dwCurrent;
-
-        bool isRet = (currentByte == 0xC3 ||  // near RET
-            currentByte == 0xC2 ||  // near RET imm16
-            currentByte == 0xCB ||  // far RETF
-            currentByte == 0xCA);   // far RETF imm16
+        bool isRet = (currentByte == 0xC3 || 0xC2 || 0xCB || 0xCA);
 
         // use HDE64 directly to get the length of the x64 instruction
         hde64s hs;
@@ -406,7 +233,6 @@ DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart) {
     return bFoundRet ? dwLastRetOffset : dwLength;
 
 #else
-#error "CPolymorphic engine only supports x86 and x64 architectures."
     return 0;
 #endif
 }

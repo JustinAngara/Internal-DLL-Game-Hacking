@@ -1,15 +1,17 @@
 #include "Polymorphic.h"
-
+#include "Mutators/Mutate.h"
 uint8_t CPolymorphic::junkReg(CPolymorphic* o) 
 {
+    // o doesn't get used
     static const uint8_t r[] = { 0,1,2,3,6,7 };
-    return r[o->randomize(0, 5)];
+    return r[Memory::randomize(0, 5)];
 }
 
 
 void CPolymorphic::appendJunk(CPolymorphic* o, std::vector<uint8_t>& out)
 {
-    switch (o->randomize(0, 5))
+    o;
+    switch (Memory::randomize(0, 5))
     {
     case 0: out.push_back(0x90); break;                                   // nop
     case 1: out.insert(out.end(), { 0x0F,0x1F,0x00 }); break;            // nop dword[rax]
@@ -60,11 +62,11 @@ uintptr_t CPolymorphic::RelocateWithJunk(uintptr_t start, size_t len)
 
         // Junk BEFORE each real instruction, but never before the terminating ret
         // (junk after ret would be dead). Randomize whether to insert for diversity.
-        if (!isRet && this->randomize(0, 1) == 1)
+        if (!isRet && Memory::randomize(0, 1) == 1)
             appendJunk(this, buf);
 
         for (unsigned int i = 0; i < ilen; ++i)
-            buf.push_back(this->Read(cur + i));
+            buf.push_back(Memory::Read(cur + i));
 
         cur += ilen;
     }

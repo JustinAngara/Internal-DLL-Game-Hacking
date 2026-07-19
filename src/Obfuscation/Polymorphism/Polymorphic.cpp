@@ -1,4 +1,5 @@
 #include "Polymorphic.h"
+#include "Mutators/Mutate.h"
 #include <iostream>
 
 void CPolymorphic::ObfuscateOpcode(uintptr_t dwAddress)
@@ -9,13 +10,13 @@ void CPolymorphic::ObfuscateOpcode(uintptr_t dwAddress)
 
     // --- peel legacy prefixes (bounded; real instrs have <=4) ---
     for (int i = 0; i < 4; ++i) {
-        uint8_t b = this->Read(a);
+        uint8_t b = Memory::Read(a);
         if      (b == 0x66) { pfx66 = true; a++; }
         else if (b == 0xF2) { pfxF2 = true; a++; }
         else if (b == 0xF3) { pfxF3 = true; a++; }
         else if (b == 0x2E || b == 0x36 || b == 0x3E ||    // segment overrides
             b == 0x26 || b == 0x64 || b == 0x65 ||
-            b == 0x67)                 { a++; }        // addr-size
+            b == 0x67){ a++; }        // addr-size
         else break;
     }
 
@@ -23,45 +24,43 @@ void CPolymorphic::ObfuscateOpcode(uintptr_t dwAddress)
     uint8_t rex = 0;
 #if defined(_M_X64) || defined(__x86_64__)
     {
-        uint8_t b = this->Read(a);
+        uint8_t b = Memory::Read(a);
         if ((b & 0xF0) == 0x40) { rex = b; a++; }
     }
 #endif
 
-    uint8_t op = this->Read(a);
+    uint8_t op = Memory::Read(a);
     // `a` now points AT the opcode; hand that to the handlers so their
     // internal "skip REX" logic still works (pass dwAddress, they re-find it).
 
     // ---- two-byte (0F) opcode space ----
     if (op == 0x0F) {
-        this->MutateTwoByte(dwAddress, pfx66, pfxF2, pfxF3);
+        Memory::MutateTwoByte(dwAddress, pfx66, pfxF2, pfxF3);
         return;
     }
 
     // ---- one-byte space ----
     switch (op)
     {
-    // 32/16-bit reg-to-reg ALU + MOV + TEST  (pfx66 -> 16-bit, same opcodes)
+    
+        // 32/16-bit reg-to-reg ALU + MOV + TEST  (pfx66 -> 16-bit, same opcodes)
     case 0x89: case 0x8B:
     case 0x01: case 0x03: case 0x09: case 0x0B:
     case 0x21: case 0x23: case 0x29: case 0x2B:
     case 0x31: case 0x33: case 0x39: case 0x3B:
-    case 0x85:
-        this->Mutate2Byte(dwAddress, this->Read(dwAddress));                        break;
+    case 0x85: Memory::Mutate2Byte(dwAddress, Memory::Read(dwAddress));  break;
 
      // 8-bit reg-to-reg ALU + MOV + TEST
     case 0x00: case 0x02: case 0x08: case 0x0A:
     case 0x20: case 0x22: case 0x28: case 0x2A:
     case 0x30: case 0x32: case 0x38: case 0x3A:
-    case 0x84: case 0x88: case 0x8A:
-        this->Mutate8BitRegToReg(dwAddress, this->Read(dwAddress));                 break;
-
-    case 0x80: this->Mutate80(dwAddress,    this->Read(dwAddress));                 break;
-    case 0x81: this->Mutate6Byte(dwAddress, this->Read(dwAddress));                 break;
-    case 0x83: this->Mutate3Byte(dwAddress, this->Read(dwAddress));                 break;
-    case 0x05: case 0x2D: this->Mutate5Byte(dwAddress, this->Read(dwAddress));      break;
-    case 0x04: case 0x2C: this->Mutate8BitAccImm(dwAddress, this->Read(dwAddress)); break;
-    case 0xCC: this->Mutate1Byte(dwAddress, this->Read(dwAddress));                 break;
+    case 0x84: case 0x88: case 0x8A: Memory::Mutate8BitRegToReg(dwAddress, Memory::Read(dwAddress)); break;
+    case 0x80: Memory::Mutate80(dwAddress,    Memory::Read(dwAddress));                 break;
+    case 0x81: Memory::Mutate6Byte(dwAddress, Memory::Read(dwAddress));                 break;
+    case 0x83: Memory::Mutate3Byte(dwAddress, Memory::Read(dwAddress));                 break;
+    case 0x05: case 0x2D: Memory::Mutate5Byte(dwAddress, Memory::Read(dwAddress));      break;
+    case 0x04: case 0x2C: Memory::Mutate8BitAccImm(dwAddress, Memory::Read(dwAddress)); break;
+    case 0xCC: Memory::Mutate1Byte(dwAddress, Memory::Read(dwAddress));                 break;
     
     default: break;
     }
@@ -109,7 +108,9 @@ void CPolymorphic::Run(uintptr_t dwStart)
 {
     DWORD dwLength = CalculateFunctionSize(dwStart);
     if (dwLength == 0 || dwLength > 0x4000)
+    {
         return;
+    }
 
     uintptr_t dwCurrent = dwStart;
     uintptr_t hardEnd   = dwStart + dwLength;
@@ -117,7 +118,7 @@ void CPolymorphic::Run(uintptr_t dwStart)
     // harness is responsible for making [dwStart, hardEnd) writable
     while (dwCurrent < hardEnd)
     {
-        int nOpcodeLen = oplen((BYTE*)dwCurrent);
+        int nOpcodeLen = Memory::oplen((BYTE*)dwCurrent);
 
         // desync -> stop
         if (nOpcodeLen <= 0) break;
@@ -155,7 +156,8 @@ CPolymorphic::~CPolymorphic(void)
 
 /////////////////////////////////DEPENDENT BIT OPERATION//////////////////////////
 
-DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart) {
+DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart) 
+{
 #if defined(_M_IX86)
     // 32bit x86 implementation
 
@@ -165,7 +167,8 @@ DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart) {
     DWORD dwLastRetOffset = 0;
     bool bFoundRet = false;
 
-    while (dwLength < dwMaxBytes) {
+    while (dwLength < dwMaxBytes) 
+    {
         BYTE currentByte = *(BYTE*)dwCurrent;
 
         bool isRet = (currentByte == 0xC3 ||  // near RET
@@ -180,7 +183,8 @@ DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart) {
         dwLength += instrLen;
         dwCurrent += instrLen;
 
-        if (isRet) {
+        if (isRet) 
+        {
             dwLastRetOffset = dwLength;
             bFoundRet = true;
 
@@ -203,7 +207,8 @@ DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart) {
     DWORD dwLastRetOffset = 0;
     bool bFoundRet = false;
 
-    while (dwLength < dwMaxBytes) {
+    while (dwLength < dwMaxBytes) 
+    {
         BYTE currentByte = *(BYTE*)dwCurrent;
         bool isRet = (currentByte == 0xC3 || 0xC2 || 0xCB || 0xCA);
 
@@ -217,7 +222,8 @@ DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart) {
         dwLength += instrLen;
         dwCurrent += instrLen;
 
-        if (isRet) {
+        if (isRet) 
+        {
             dwLastRetOffset = dwLength;
             bFoundRet = true;
 

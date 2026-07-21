@@ -52,8 +52,8 @@ private:
     // mutate stuff
     struct Mutators;
 
-    uint8_t junkReg(CPolymorphic* o);    
-    void appendJunk(CPolymorphic* o, std::vector<uint8_t>& out);
+    uint8_t JunkReg();    
+    void AppendJunk(std::vector<uint8_t>& out);
 
     DWORD CalculateFunctionSize(DWORD_PTR dwStart);
     void ObfuscateOpcode(uintptr_t dwAddress);

@@ -3,26 +3,30 @@ project(ProcessHooker)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Launch Loader when you hit the green run arrow in VS
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+             PROPERTY VS_STARTUP_PROJECT Loader)
+
+# ---------------------------------------------------------------------------
+# ProcessHooker (the DLL) — everything under src/
+# ---------------------------------------------------------------------------
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
 )
-message(STATUS "Sources found: ${SOURCES}")   
+message(STATUS "DLL sources found: ${SOURCES}")
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.inl"
 )
 
-add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "src/HackedGames/CounterStrike/Recoil.cpp" "src/HackedGames/CounterStrike/Recoil.h" "src/Obfuscation/Polymorphism/Polymorphic.h" "src/Obfuscation/Polymorphism/Polymorphic.cpp" "src/Obfuscation/Registery/ObfuscateMethods.cpp" "src/Obfuscation/HideProcess/HideProcess.h" "src/Obfuscation/HideProcess/HideProcess.cpp" "src/gui/Gui.h" "src/gui/Category.h" "src/gui/Feature.h" "src/ext/minhook/hde/hde64.c" "src/ext/minhook/hde/hde32.c" "src/Gui/Gui.cpp" "src/ext/reserved_windows/ntdll/ntdll.h"  "src/ext/reserved_windows/ntdll/NtDllHandler.cpp" "src/ext/reserved_windows/ntdll/NtDllHandler.h")
-
-# add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "src/sdk/Math/Math.h" "src/sdk/Math/Math.inl" "src/Game/HackedGames/CounterStrike/HackManager.h")
+add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS})
 
 target_include_directories(ProcessHooker PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
-
-message(STATUS "Sources found: ${SOURCES}")
 
 target_compile_options(ProcessHooker PRIVATE /Y-)
 
@@ -32,20 +36,49 @@ target_compile_definitions(ProcessHooker PRIVATE
     _UNICODE
 )
 
-
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    # 64-bit build detected
-    target_link_libraries(ProcessHooker PRIVATE 
+    target_link_libraries(ProcessHooker PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/reserved_windows/ntdll/ntdll_x64.lib
     )
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    # 32-bit build detected
-    target_link_libraries(ProcessHooker PRIVATE 
+    target_link_libraries(ProcessHooker PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/reserved_windows/ntdll/ntdll_x86.lib
     )
 endif()
 
+# ---------------------------------------------------------------------------
+# Loader (the EXE) — everything under Loader/ + the ntdll handler
+# ---------------------------------------------------------------------------
+file(GLOB_RECURSE LOADER_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Loader/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Loader/*.c"
+)
+message(STATUS "Loader sources found: ${LOADER_SOURCES}")
 
-add_executable(Loader loader/Main.cpp  "src/ext/reserved_windows/ntdll/NtDllHandler.cpp" "src/ext/reserved_windows/ntdll/NtDllHandler.h")
+add_executable(Loader
+    ${LOADER_SOURCES}
+    "src/ext/reserved_windows/ntdll/NtDllHandler.cpp"
+)
+
+target_include_directories(Loader PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/Loader"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+
+target_compile_definitions(Loader PRIVATE
+    WIN32_LEAN_AND_MEAN
+    UNICODE
+    _UNICODE
+)
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    target_link_libraries(Loader PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/reserved_windows/ntdll/ntdll_x64.lib
+    )
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    target_link_libraries(Loader PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/reserved_windows/ntdll/ntdll_x86.lib
+    )
+endif()
+
 add_dependencies(Loader ProcessHooker)
-

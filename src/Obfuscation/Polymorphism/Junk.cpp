@@ -47,13 +47,20 @@ uintptr_t CPolymorphic::RelocateWithJunk(uintptr_t start, size_t len)
 
     uintptr_t cur = start;
     uintptr_t end = start + len;
-
-#ifdef _WIN64
-
+    
     while (cur < end)
     {
+#ifdef _WIN64
         hde64s hs;
         unsigned int ilen = hde64_disasm((void*)cur, &hs);
+#else
+        hde32s hs;
+        unsigned int ilen = hde32_disasm((void*)cur, &hs);
+
+
+#endif
+
+
         if ((hs.flags & F_ERROR) || ilen == 0)
             return 0;                          // shouldn't happen (guard passed), be safe
 
@@ -82,7 +89,5 @@ uintptr_t CPolymorphic::RelocateWithJunk(uintptr_t start, size_t len)
     memcpy(mem, buf.data(), buf.size());
     FlushInstructionCache(GetCurrentProcess(), mem, buf.size());
     return (uintptr_t)mem;
-#else
-#endif
-    return reinterpret_cast<uintptr_t>(nullptr);
+
 }

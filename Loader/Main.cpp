@@ -1,8 +1,8 @@
 #include "ShellCode/StartRoutine.h"
 #define DLL_PATH_X86 TEXT("ProcessHooker.dll")
 #define DLL_PATH_X64 TEXT("ProcessHooker.dll")
-#define PROCESS_NAME_X64 TEXT("Notepad.exe")
-#define PROCESS_NAME_X64 TEXT("Notepad.exe")
+#define PROCESS_NAME_X64 TEXT("notepad++.exe")
+#define PROCESS_NAME_X86 TEXT("notepad++.exe")
 
 #define LOAD_LIBRARY_NAME_A "LoadLibraryA"
 #define LOAD_LIBRARY_NAME_W	"LoadLibraryW"

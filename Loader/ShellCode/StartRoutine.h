@@ -2,6 +2,7 @@
 
 #include "GetProcAddress.h"
 #include <vector>
+#include <bcrypt.h>
 #include <iostream>
 #include <cstdlib>   
 

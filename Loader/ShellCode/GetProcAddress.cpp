@@ -1,7 +1,7 @@
 #include "GetProcAddress.h"
+#include <stdlib.h>
 
-
-HINSTANCE GetModuleHandlEx(HANDLE hTargetProc, const TCHAR* lpModuleName)
+HINSTANCE GetModuleHandleEx(HANDLE hTargetProc, const TCHAR* lpModuleName)
 {
 	MODULEENTRY32 ME32{ 0 };
 	ME32.dwSize = sizeof(ME32);
@@ -37,7 +37,7 @@ HINSTANCE GetModuleHandlEx(HANDLE hTargetProc, const TCHAR* lpModuleName)
 		return NULL;
 	}
 
-	ME32.hModule;
+	return ME32.hModule;
 }
 
 void* GetProcAddressEx(HANDLE hTargetProc, const TCHAR* lpModuleName, const char* lpProcName)

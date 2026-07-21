@@ -75,8 +75,13 @@ bool CPolymorphic::IsRelocatable(uintptr_t start, size_t len)
 
     while (cur < end)
     {
+#ifdef _WIN64
         hde64s hs;
         unsigned int ilen = hde64_disasm((void*)cur, &hs);
+#else
+        hde32s hs;
+        unsigned int ilen = hde32_disasm((void*)cur, &hs);
+#endif
         if ((hs.flags & F_ERROR) || ilen == 0)
             return false;                      // can't decode -> refuse
 
@@ -176,7 +181,7 @@ DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart)
             currentByte == 0xCB ||  // far RETF
             currentByte == 0xCA);   // far RETF imm16
 
-        int instrLen = oplen((BYTE*)dwCurrent);
+        int instrLen = Memory::oplen((BYTE*)dwCurrent);
 
         if (instrLen == 0) break; // unknown instruction, bail
 

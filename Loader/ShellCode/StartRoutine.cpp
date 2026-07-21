@@ -34,9 +34,9 @@ DWORD StartRoutine(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, LAUNCH_M
 	return 0;
 }
 
-DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& Out)
+DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet)
 {
-	auto p_NtCreateThreadEx = reinterpret_cast<f_NtCreateThreadEx>( GetProcAddress(GetModuleHandle(TEXT("ntdll.dll")), "NtCreateThreadEx"));
+	auto p_NtCreateThreadEx = reinterpret_cast<f_NtCreateThreadEx>(GetProcAddress(GetModuleHandle(TEXT("ntdll.dll")), "NtCreateThreadEx"));
 
 	if (!p_NtCreateThreadEx)
 	{
@@ -72,7 +72,7 @@ DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, D
 		0xC3                                                // + 0x1E   -> ret
 	}; // SIZE = 0x1F (+ 0x10)
 
-	*reinterpret_cast<void**>      (Shellcode+0x00)   = pArg;
+	*reinterpret_cast<void**>      (Shellcode + 0x00) = pArg;
 	*reinterpret_cast<f_Routine**> (Shellcode + 0x08) = pRoutine;
 
 	DWORD FuncOffset = 0x10;
@@ -86,11 +86,69 @@ DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, D
 
 	void* pRemoteArg = pMem;
 	void* pRemoteFunc = reinterpret_cast<BYTE*>(pMem) + FuncOffset;
-	
+
 	HANDLE hThread = nullptr;
-	NTSTATUS ntRet;
+	NTSTATUS ntRet = p_NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, nullptr, hTargetProc, pRemoteFunc, pRemoteArg, 0, 0, 0, 0, nullptr);
+	if (NT_FAIL(ntRet) || !hThread)
+	{
+		LastWin32Error = ntRet;
+		VirtualFreeEx(hTargetProc, pMem, 0, MEM_RELEASE);
+		return SR_NTCTE_ERR_NTCTE_FAIL;
+	}
+
+	DWORD dwWaitRet = WaitForSingleObject(hThread, SR_REMOTE_TIMEOUT);
+	if (!dwWaitRet)
+	{
+		LastWin32Error = GetLastError();
+		TerminateThread(hThread, 0);
+		CloseHandle(hThread);
+		VirtualFreeEx(hTargetProc, pMem, 0, MEM_RELEASE);
+		return SR_NTCTE_ERR_TIMEOUT;
+	}
+	CloseHandle(hThread);
+
+	bRet = ReadProcessMemory(hTargetProc, pMem, &RemoteRet, sizeof(RemoteRet), nullptr);
+
+	VirtualFreeEx(hTargetProc, pMem, 0, MEM_RELEASE);
+	if (!bRet)
+	{
+		LastWin32Error = GetLastError();
+		return SR_NTCTE_ERR_RPM_FAIL;
+	}
 
 #else
+	// x86
+	HANDLE hThread = nullptr;
+	NTSTATUS ntRet = p_NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, nullptr, hTargetProc, pRoutine, pArg, 0, 0, 0, 0, nullptr);
+	if (NT_FAIL(ntRet) || !hThread)
+	{
+		LastWin32Error = ntRet;
+		VirtualFreeEx(hTargetProc, pMem, 0, MEM_RELEASE);
+		return SR_NTCTE_ERR_NTCTE_FAIL;
+	}
+
+	DWORD dwWaitRet = WaitForSingleObject(hThread, SR_REMOTE_TIMEOUT);
+	if (!dwWaitRet)
+	{
+		LastWin32Error = GetLastError();
+		TerminateThread(hThread, 0);
+		CloseHandle(hThread);
+		VirtualFreeEx(hTargetProc, pMem, 0, MEM_RELEASE);
+		return SR_NTCTE_ERR_TIMEOUT;
+	}
+
+	DWORD dwRemoteRet = 0;
+	BOOL bRet = GetExitCodeThread(hThread, &dwRemoteRet);
+	if (!bRet)
+	{
+		LastWin32Error = GetLastError();
+		CloseHandle(hThread);
+		return SR_NTCTE_ERR_RPM_FAIL;
+	}
+
+	RemoteRet = dwRemoteRet;
+	CloseHandle(hThread);
+
 
 #endif
 

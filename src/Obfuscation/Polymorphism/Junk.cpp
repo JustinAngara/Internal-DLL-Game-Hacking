@@ -48,6 +48,8 @@ uintptr_t CPolymorphic::RelocateWithJunk(uintptr_t start, size_t len)
     uintptr_t cur = start;
     uintptr_t end = start + len;
 
+#ifdef _WIN64
+
     while (cur < end)
     {
         hde64s hs;
@@ -80,4 +82,7 @@ uintptr_t CPolymorphic::RelocateWithJunk(uintptr_t start, size_t len)
     memcpy(mem, buf.data(), buf.size());
     FlushInstructionCache(GetCurrentProcess(), mem, buf.size());
     return (uintptr_t)mem;
+#else
+#endif
+    return reinterpret_cast<uintptr_t>(nullptr);
 }

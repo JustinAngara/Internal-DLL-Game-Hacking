@@ -4,13 +4,8 @@ project(ProcessHooker)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Launch Loader when you hit the green run arrow in VS
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
              PROPERTY VS_STARTUP_PROJECT Loader)
-
-# ---------------------------------------------------------------------------
-# ProcessHooker (the DLL) — everything under src/
-# ---------------------------------------------------------------------------
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
@@ -46,9 +41,7 @@ elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     )
 endif()
 
-# ---------------------------------------------------------------------------
-# Loader (the EXE) — everything under Loader/ + the ntdll handler
-# ---------------------------------------------------------------------------
+
 file(GLOB_RECURSE LOADER_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/Loader/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Loader/*.c"

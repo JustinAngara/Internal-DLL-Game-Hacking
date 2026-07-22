@@ -31,7 +31,7 @@ DWORD StartRoutine(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, LAUNCH_M
 		dwRet = SR_ERR_INVALID_LAUNCH_METHOD;
 		break;
 	}
-	return 0;
+	return dwRet;
 }
 
 DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet)
@@ -97,7 +97,7 @@ DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, D
 	}
 
 	DWORD dwWaitRet = WaitForSingleObject(hThread, SR_REMOTE_TIMEOUT);
-	if (!dwWaitRet)
+	if (dwWaitRet != WAIT_OBJECT_0)
 	{
 		LastWin32Error = GetLastError();
 		TerminateThread(hThread, 0);
@@ -155,7 +155,7 @@ DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, D
 	return SR_ERR_SUCCESS;
 }
 
-DWORD SR_HijackThread(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& Out)
+DWORD SR_HijackThread(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet)
 {
 	THREADENTRY32 TE32{ 0 };
 	TE32.dwSize = sizeof(TE32);
@@ -186,7 +186,7 @@ DWORD SR_HijackThread(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD
 			break;
 		}
 		
-		bRet = Thread32First(hSnap, &TE32);
+		bRet = Thread32Next(hSnap, &TE32);
 	} while (bRet);
 
 	if (!threadID)
@@ -301,10 +301,68 @@ DWORD SR_HijackThread(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD
 		0xC3                                       // + 0x2B               -> ret                                     ;return to OldEip
 
 	}; // SIZE = 0x2C (+ 0x04)
+
+	DWORD FuncOffset = 0x04;
+	DWORD CheckByteOffset = 0x02 + FuncOffset;
+
+	*reinterpret_cast<DWORD*>(Shellcode + 0x06 + FuncOffset) = OldContext.Eip;
+	
+	*reinterpret_cast<void**>(Shellcode + 0x0F + FuncOffset) = pArg;
+	*reinterpret_cast<void**>(Shellcode + 0x14 + FuncOffset) = pRoutine;
+
+	*reinterpret_cast<void**>(Shellcode + 0x1C + FuncOffset) = pCodeCave;
+	*reinterpret_cast<BYTE**>(Shellcode + 0x26 + FuncOffset) = reinterpret_cast<BYTE*>(pCodeCave) + CheckByteOffset;
+
+	OldContext.Eip = reinterpret_cast<DWORD>(pCodeCave) + FuncOffset;
+
 #endif
 
+	if (!WriteProcessMemory(hTargetProc, pCodeCave, Shellcode, sizeof(Shellcode), nullptr))
+	{
+		LastWin32Error = GetLastError();
+		ResumeThread(hThread);
+		CloseHandle(hThread);
+		VirtualFreeEx(hTargetProc, pCodeCave, 0, MEM_RELEASE);
+		return SR_HT_ERR_WPM_FAIL;
+	}
 
-	return 0;
+	if (!SetThreadContext(hThread, &OldContext))
+	{
+
+		LastWin32Error = GetLastError();
+		ResumeThread(hThread);
+		CloseHandle(hThread);
+		VirtualFreeEx(hTargetProc, pCodeCave, 0, MEM_RELEASE);
+		return SR_HT_ERR_SET_CONTEXT_FAIL;
+	}
+
+	if (ResumeThread(hThread) == (DWORD)-1)
+	{
+		LastWin32Error = GetLastError();
+		CloseHandle(hThread);
+		VirtualFreeEx(hTargetProc, pCodeCave, 0, MEM_RELEASE);
+		return SR_HT_ERR_RESUME_FAIL;
+	}
+
+
+	CloseHandle(hThread);
+	DWORD Timer = GetTickCount();
+	BYTE CheckByte = 1;
+
+	do
+	{
+		ReadProcessMemory(hTargetProc, reinterpret_cast<BYTE*>(pCodeCave) + CheckByteOffset, &CheckByte, 1, nullptr);
+		if (!GetTickCount() - Timer > SR_REMOTE_TIMEOUT)
+		{
+			return SR_HT_ERR_TIMEOUT;
+		}
+		Sleep(10);
+	} while (CheckByte != 0);
+	
+	ReadProcessMemory(hTargetProc, pCodeCave, &RemoteRet, sizeof(RemoteRet), nullptr);
+	VirtualFreeEx(hTargetProc, pCodeCave, 0, MEM_RELEASE);
+
+	return SR_ERR_SUCCESS;
 }
 
 DWORD SR_SetWindowsHookEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& Out)

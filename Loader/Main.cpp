@@ -1,6 +1,6 @@
 #include "ShellCode/StartRoutine.h"
 #define DLL_PATH_X86 TEXT("ProcessHooker.dll")
-#define DLL_PATH_X64 TEXT("ProcessHooker.dll")
+#define DLL_PATH_X64 TEXT("C:\\Users\\justi\\C++ Code\\Internal Base Starter\\ProcessHooker\\ProcessHooker\\out\\build\\x64-Release\\ProcessHooker.dll")
 #define PROCESS_NAME_X64 TEXT("notepad++.exe")
 #define PROCESS_NAME_X86 TEXT("notepad++.exe")
 
@@ -127,7 +127,7 @@ bool InjectDll(const TCHAR* szProcess, const TCHAR* szPath, LAUNCH_METHOD Method
 int main()
 {
 
-	InjectDll(PROCESS_NAME_X64, DLL_PATH, LM_SetWindowsHookEx);
+	InjectDll(PROCESS_NAME_X64, DLL_PATH, LM_NtCreateThreadEx);
 
 	printf("Press enter to exit.\n");
 	std::cin.get();

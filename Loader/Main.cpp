@@ -127,7 +127,7 @@ bool InjectDll(const TCHAR* szProcess, const TCHAR* szPath, LAUNCH_METHOD Method
 int main()
 {
 
-	InjectDll(PROCESS_NAME_X64, DLL_PATH, LM_NtCreateThreadEx);
+	InjectDll(PROCESS_NAME_X64, DLL_PATH, LM_HijackThread);
 
 	printf("Press enter to exit.\n");
 	std::cin.get();

@@ -187,3 +187,16 @@ namespace Test { namespace Obfuscation
     
 }} // namespace Test::Obfuscation
 
+
+
+
+namespace Test{namespace Utils
+{
+    bool IsInValidMemoryRegion(uint64_t return_address)
+    {
+        uint64_t base = (uint64_t)GetModuleHandleA(nullptr);
+        PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
+        PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(base + dos->e_lfanew);
+        return (return_address > base && return_address < (base + nt->OptionalHeader.SizeOfImage));
+    }
+}}

@@ -6,4 +6,10 @@ namespace Test
 	{
 		void Run();
 	}
+	namespace Utils
+	{
+
+		bool IsInValidMemoryRegion(uint64_t return_address);
+	}
+
 }

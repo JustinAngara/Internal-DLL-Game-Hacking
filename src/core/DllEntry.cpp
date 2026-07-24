@@ -5,6 +5,7 @@
 #include "Gui/gui.h"
 #include "ext/minhook/MinHook.h"
 #include "sdk/Test/Test.h"
+#include "Obfuscation/SpoofReturnAddress/SpoofRet.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -32,7 +33,8 @@ static void MainThread(HMODULE hModule)
 
 
 	printf("Run() called\n"); // now visible
-	Test::Obfuscation::Run();
+	//Test::Obfuscation::Run();
+	SpoofRet::Run();
 
 	FreeLibraryAndExitThread(hModule, 0);
 }

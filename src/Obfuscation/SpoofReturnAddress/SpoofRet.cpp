@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <intrin.h>
 #include "SpoofRet.h"
+#include "sdk/Memory/Memory.h"
 #pragma section(".text")
 __declspec(allocate(".text")) const unsigned char jmp_rbx[]{ 0xFF, 0x23 };
 
@@ -131,59 +132,7 @@ static inline auto spoof_call(
 //////////////////////////////// sooon remove this and refactor somewhere else
 //////////////////////////////// currently just tester to test spoof ret
 
-PIMAGE_NT_HEADERS get_nt_headers(PVOID module)
-{
-	if (!module)
-		return nullptr;
-	return (PIMAGE_NT_HEADERS)((PBYTE)module + PIMAGE_DOS_HEADER(module)->e_lfanew);
-}
 
-PBYTE find_pattern(PVOID module, DWORD size, LPCSTR pattern, LPCSTR mask)
-{
-	if (!module)
-		return nullptr;
-
-	auto checkMask = [](PBYTE buffer, LPCSTR pattern, LPCSTR mask) -> BOOL
-		{
-			for (auto x = buffer; *mask; pattern++, mask++, x++) {
-				auto addr = *(BYTE*)(pattern);
-				if (addr != *x && *mask != '?')
-					return FALSE;
-			}
-
-			return TRUE;
-		};
-
-	for (auto x = 0; x < size - strlen(mask); x++) {
-
-		auto addr = (PBYTE)module + x;
-		if (checkMask(addr, pattern, mask)) {
-			return addr;
-		}
-	}
-
-	return NULL;
-}
-
-PBYTE find_pattern(PVOID base, LPCSTR pattern, LPCSTR mask)
-{
-	if (!base) return 0;
-
-	auto header = get_nt_headers(base);
-	auto section = IMAGE_FIRST_SECTION(header);
-
-	for (auto x = 0; x < header->FileHeader.NumberOfSections; x++, section++) {
-
-		if (!memcmp(section->Name, ".text", 5) || !memcmp(section->Name, ("PAGE"), 4))
-		{
-			auto addr = find_pattern((PBYTE)base + section->VirtualAddress, section->Misc.VirtualSize, pattern, mask);
-			if (addr)
-				return addr;
-		}
-	}
-
-	return NULL;
-}
 
 void add_num(int a, int b)
 {

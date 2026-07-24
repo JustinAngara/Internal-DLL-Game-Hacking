@@ -16,4 +16,7 @@ namespace Memory
     // memory editing
     void Patch(BYTE* dest, BYTE* src, unsigned int size);
     void Nop(BYTE* dest, unsigned int size);
+
+
+    PIMAGE_NT_HEADERS GetNTHeaders(PVOID module);
 }

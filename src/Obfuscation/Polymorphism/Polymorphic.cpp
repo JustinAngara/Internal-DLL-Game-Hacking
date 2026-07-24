@@ -215,7 +215,7 @@ DWORD CPolymorphic::CalculateFunctionSize(DWORD_PTR dwStart)
     while (dwLength < dwMaxBytes) 
     {
         BYTE currentByte = *(BYTE*)dwCurrent;
-        bool isRet = (currentByte == 0xC3 || 0xC2 || 0xCB || 0xCA);
+        bool isRet = (currentByte == 0xC3 || currentByte == 0xC2 || currentByte == 0xCB || currentByte == 0xCA);
 
         // use HDE64 directly to get the length of the x64 instruction
         hde64s hs;

@@ -57,3 +57,9 @@ void Memory::Nop(BYTE* dst, unsigned int size)
 }
 
 
+PIMAGE_NT_HEADERS Memory::GetNTHeaders(PVOID module)
+{
+    if (!module)
+        return nullptr;
+    return (PIMAGE_NT_HEADERS)((PBYTE)module + PIMAGE_DOS_HEADER(module)->e_lfanew);
+}

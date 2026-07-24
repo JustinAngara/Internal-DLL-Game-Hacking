@@ -128,12 +128,6 @@ static inline auto spoof_call(
 }
 
 
-
-//////////////////////////////// sooon remove this and refactor somewhere else
-//////////////////////////////// currently just tester to test spoof ret
-
-
-
 void add_num(int a, int b)
 {
 	void* ret = _ReturnAddress();
@@ -146,8 +140,6 @@ void add_num(int a, int b)
 
 void SpoofRet::Run()
 {
-
-	// jmp rbx
 	void* base = (void*)GetModuleHandleA(0);
 	printf("base = 0x%p\n", base);
 

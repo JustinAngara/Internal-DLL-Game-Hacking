@@ -34,7 +34,7 @@ static void MainThread(HMODULE hModule)
 
 	printf("Run() called\n"); // now visible
 	//Test::Obfuscation::Run();
-	SpoofRet::Run();
+	//SpoofRet::Run();
 
 	FreeLibraryAndExitThread(hModule, 0);
 }

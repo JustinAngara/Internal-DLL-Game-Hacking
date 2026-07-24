@@ -1,14 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
-project(ProcessHooker)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project(ProcessHooker LANGUAGES C CXX ASM_MASM)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
              PROPERTY VS_STARTUP_PROJECT Loader)
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.asm"
 )
 message(STATUS "DLL sources found: ${SOURCES}")
 
@@ -19,11 +17,15 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
 
 add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS})
 
+target_compile_features(ProcessHooker PRIVATE cxx_std_17)
+
 target_include_directories(ProcessHooker PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-target_compile_options(ProcessHooker PRIVATE /Y-)
+target_compile_options(ProcessHooker PRIVATE 
+    $<$<COMPILE_LANGUAGE:C,CXX>:/Y->
+)
 
 target_compile_definitions(ProcessHooker PRIVATE
     WIN32_LEAN_AND_MEAN
@@ -52,6 +54,8 @@ add_executable(Loader
     ${LOADER_SOURCES}
     "src/ext/reserved_windows/ntdll/NtDllHandler.cpp"
 )
+
+target_compile_features(Loader PRIVATE cxx_std_17)
 
 target_include_directories(Loader PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Loader"

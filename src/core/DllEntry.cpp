@@ -25,6 +25,17 @@ PresentFn o_present = nullptr;
 //	return o_present(swapChain, syncInterval, flags);
 //}
 
+
+void foo()
+{
+	int a = 5;
+	int b = 6;
+	void* ret = _ReturnAddress();
+
+	printf("ret = 0x%p\n", ret);
+
+	printf("a + b = %i\n", (a + b));
+}
 static void MainThread(HMODULE hModule)
 {
 	AllocConsole();
@@ -35,6 +46,8 @@ static void MainThread(HMODULE hModule)
 	printf("Run() called\n"); // now visible
 	//Test::Obfuscation::Run();
 	//SpoofRet::Run();
+	SpoofRet r;
+	r.Run(foo);
 
 	FreeLibraryAndExitThread(hModule, 0);
 }

@@ -1,6 +1,9 @@
 #pragma once
-
-namespace SpoofRet
+#include "sdk/Utils/Structs.h"
+class SpoofRet
 {
-	void Run();
-}
+public:
+	void Run(Vars::Func f);
+private:
+	// anything here
+};

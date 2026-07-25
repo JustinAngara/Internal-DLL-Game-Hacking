@@ -138,24 +138,15 @@ void add_num(int a, int b)
 }
 
 
-void SpoofRet::Run()
+void SpoofRet::Run(Vars::Func f)
 {
-	void* base = (void*)GetModuleHandleA(0);
-	printf("base = 0x%p\n", base);
-
-	spoof_trampoline = (void*)jmp_rbx;
+	spoof_trampoline = (void*)jmp_rbx; // find a jmp rbx somewhere and go there
 	printf("spoof_trampoline = 0x%p\n", spoof_trampoline);
-	printf("add_num = 0x%p\n", add_num);
-
-	printf("BEFORE: \n");
-	add_num(6, 6);
-
-	system("pause");
+	printf("Func_f = 0x%p\n", add_num);
 
 	printf("--------------------------\n");
 	printf("AFTER:\n");
 
-	spoof_call(add_num, 24, 24);
+	spoof_call(f);
 
-	while (true) {}
 }

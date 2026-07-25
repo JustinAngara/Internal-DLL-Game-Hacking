@@ -2,22 +2,22 @@
 
 #include <vector>
 #include <string>
+#include "sdk/Utils/Structs.h"
 #include "../Polymorphism/Polymorphic.h"
 namespace ObfuscateRegister
 {
-    using Func = void(*)();       
-
+    
     struct Entry {
         const char* name;
-        Func        fn;    
+        Vars::Func        fn;    
     };
     // obfuscation techniques
     static CPolymorphic poly;
 
 
     // member variables and methods
-    static std::vector< std::pair<std::string, Func> > tableFuncs;
+    static std::vector< std::pair<std::string, Vars::Func> > tableFuncs;
 	static void Run();
-    static void AddFunc(std::string n, Func f);
+    static void AddFunc(std::string n, Vars::Func f);
 	
 }

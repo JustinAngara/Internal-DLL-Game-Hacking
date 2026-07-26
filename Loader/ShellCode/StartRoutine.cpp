@@ -1,5 +1,5 @@
 #include "StartRoutine.h"
-
+#include "../ManualMap/ManualMap.h"
 
 DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet);
 DWORD SR_HijackThread    (HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet);
@@ -27,7 +27,9 @@ DWORD StartRoutine(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, LAUNCH_M
 	case LM_QueueUserAPC:
 		dwRet = SR_QueueUserAPC(hTargetProc, pRoutine, pArg, LastWin32Error, RemoteRet);
 		break;
-
+	case LM_ManualMap:
+		dwRet = SR_ManualMap(hTargetProc, pRoutine, pArg, LastWin32Error, RemoteRet);
+		break;
 	default:
 		dwRet = SR_ERR_INVALID_LAUNCH_METHOD;
 		break;

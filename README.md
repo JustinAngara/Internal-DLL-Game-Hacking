@@ -2,16 +2,16 @@
 - this project is for educational purposes only.
 
 
+- This project is licensed under the [MIT License](https://opensource.org/licenses/mit-license.php) - see the [LICENSE](LICENSE.txt) file for details.
+
 ## Obfuscation & Loader
 
 - Polymorphic Engine
 
-- Spoof Ret Address
+- Spoofing Return Address
 
 - Shellcode Injector Methods
 
 - Memory, Math, and Logging Handling  
 
 - More incoming
-
-- This project is licensed under the [MIT License](https://opensource.org/licenses/mit-license.php) - see the [LICENSE](LICENSE.txt) file for details.

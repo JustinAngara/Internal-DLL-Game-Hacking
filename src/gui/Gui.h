@@ -37,11 +37,11 @@ private:
 	void destroyWindow()                       noexcept;
 	bool setupDirectX()                        noexcept;
 
-	HWND             m_window              = nullptr;
-	WNDCLASSEX       m_windowClass         = {};
+	HWND             m_window                = nullptr;
+	WNDCLASSEX       m_windowClass           = {};
 	WNDPROC          m_originalWindowProcess = nullptr;
 
-	ID3D11Device*            m_device          = nullptr;
+	ID3D11Device*            m_device           = nullptr;
 	ID3D11DeviceContext*     m_deviceContext    = nullptr;
 	IDXGISwapChain*          m_swapChain        = nullptr;
 	ID3D11RenderTargetView*  m_renderTargetView = nullptr;

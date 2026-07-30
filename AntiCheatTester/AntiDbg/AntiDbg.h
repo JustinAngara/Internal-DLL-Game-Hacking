@@ -6,4 +6,5 @@ namespace AntiDbg
 {
 	
 	int RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain);
+	int isDebuggerPresentTickCount();
 }

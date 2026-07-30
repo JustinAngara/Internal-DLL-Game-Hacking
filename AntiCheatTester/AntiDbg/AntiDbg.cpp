@@ -7,6 +7,7 @@
 static NtQueryInformationThread_t fnNtQueryInformationThread = NULL;
 static NtSetInformationThread_t   fnNtSetInformationThread   = NULL;
 
+
 int AntiDbg::RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain)
 {
     DWORD dwThreadId = 0;
@@ -31,4 +32,11 @@ int AntiDbg::RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain)
 
     WaitForSingleObject(hThread, INFINITE); 
     return 0;
+}
+
+
+
+int AntiDbg::isDebuggerPresentTickCount()
+{
+
 }

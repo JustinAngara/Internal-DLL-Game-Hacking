@@ -35,8 +35,80 @@ int AntiDbg::RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain)
 }
 
 
-
-int AntiDbg::isDebuggerPresentTickCount()
+int AntiDbg::CheckForTickCount(Func func)
 {
 
+    DWORD tickReference = GetTickCount();
+    printf("\nbefore: %d\n", tickReference);
+
+    func(); 
+
+    DWORD currentTick = GetTickCount();
+    printf("\nafter: %d\n", currentTick);
+
+    DWORD elapsedTime = currentTick - tickReference;
+    printf("\ndifference: %u", elapsedTime);
+
+
+    return elapsedTime;
+}
+ 
+
+int AntiDbg::CheckForLocalTime(Func func) 
+{
+    SYSTEMTIME sysStart, sysend;
+    FILETIME fStart, fEnd;
+    ULARGE_INTEGER uiStart, uiEnd;
+
+    GetLocalTime(&sysStart);
+
+    func();
+
+    GetLocalTime(& sysend);
+
+    if (!SystemTimeToFileTime(&sysend, &fEnd))
+        return false;
+    if (!SystemTimeToFileTime(&sysStart, &fStart))
+        return false;
+
+    uiStart.LowPart = fStart.dwLowDateTime;
+    uiStart.HighPart = fStart.dwHighDateTime;
+    uiEnd.LowPart = fEnd.dwLowDateTime;
+    uiEnd.HighPart = fEnd.dwHighDateTime;
+
+    return (((uiEnd.QuadPart - uiStart.QuadPart)*100)/1000000); // filetime conversion to ms
+} 
+
+
+int AntiDbg::CheckForQPC(Func func) 
+{
+    LARGE_INTEGER start, end, frequency;
+    QueryPerformanceCounter(&start);
+    QueryPerformanceFrequency(&frequency);
+
+    func();
+
+    QueryPerformanceCounter(&end);
+    return (end.QuadPart - start.QuadPart)*1000/frequency.QuadPart;
+}
+
+
+int AntiDbg::CheckForDebugger(Func func, AntiDbgMethod method)
+{
+    int elapsed{ 0 };
+    switch (method) 
+    {
+    case TICK_COUNT:
+        elapsed = CheckForTickCount(func);
+        break;
+    case LOCAL_TIME:
+        elapsed = CheckForLocalTime(func);
+        break;
+    case QPC:
+        elapsed = CheckForQPC(func);
+        break;
+    }
+
+    
+    return elapsed;
 }

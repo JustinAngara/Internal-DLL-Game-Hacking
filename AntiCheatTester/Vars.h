@@ -6,3 +6,5 @@ typedef LONG NTSTATUS;
 
 typedef NTSTATUS (WINAPI *NtQueryInformationThread_t)(HANDLE, ULONG, PVOID, ULONG, PULONG);
 typedef NTSTATUS (WINAPI *NtSetInformationThread_t)(HANDLE, ULONG, PVOID, ULONG);
+
+using Func = void(*)();   

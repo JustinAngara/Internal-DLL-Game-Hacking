@@ -5,11 +5,13 @@
 
 - This project is licensed under the [MIT License](https://opensource.org/licenses/mit-license.php) - see the [LICENSE](LICENSE.txt) file for details.
 
-## Cheating
+## General Purpose Cheating
 
 - Easy General Purpose Cheat Game Engine
 
 - IMGUI Menu via (hookin DirectX 11, External, Idrk) 
+
+- Memory, Math, and Logging Handling  
 
 - Examples
 
@@ -20,8 +22,6 @@
 - Spoofing Return Address
 
 - Shellcode Injector Methods
-
-- Memory, Math, and Logging Handling  
 
 - More incoming
 

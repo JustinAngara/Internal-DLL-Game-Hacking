@@ -46,7 +46,7 @@ int main()
 	std::cout << "still in working\n";
 
     // this will be able to hook isdebuggerpresent 
-	AntiDbg::RunHideThreadDebugger(ThreadMain);
+	 AntiDbg::RunHideThreadDebugger(ThreadMain);
 
 
 

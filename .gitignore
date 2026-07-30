@@ -19,3 +19,6 @@ x64/
 x86/
 [Dd]ebug/
 [Rr]elease/
+
+configure.log
+cmake-err.txt

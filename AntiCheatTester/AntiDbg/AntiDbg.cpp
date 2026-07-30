@@ -35,18 +35,18 @@ int AntiDbg::RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain)
 }
 
 
-int AntiDbg::CheckForTickCount(Func func)
+DWORD64 AntiDbg::CheckForTickCount(Func func)
 {
 
-    DWORD tickReference = GetTickCount();
+    DWORD64 tickReference = GetTickCount();
     printf("\nbefore: %d\n", tickReference);
 
     func(); 
 
-    DWORD currentTick = GetTickCount();
+    DWORD64 currentTick = GetTickCount();
     printf("\nafter: %d\n", currentTick);
 
-    DWORD elapsedTime = currentTick - tickReference;
+    DWORD64 elapsedTime = currentTick - tickReference;
     printf("\ndifference: %u", elapsedTime);
 
 
@@ -54,7 +54,7 @@ int AntiDbg::CheckForTickCount(Func func)
 }
  
 
-int AntiDbg::CheckForLocalTime(Func func) 
+DWORD64 AntiDbg::CheckForLocalTime(Func func) 
 {
     SYSTEMTIME sysStart, sysend;
     FILETIME fStart, fEnd;
@@ -67,9 +67,9 @@ int AntiDbg::CheckForLocalTime(Func func)
     GetLocalTime(& sysend);
 
     if (!SystemTimeToFileTime(&sysend, &fEnd))
-        return false;
+        return 0;
     if (!SystemTimeToFileTime(&sysStart, &fStart))
-        return false;
+        return 0;
 
     uiStart.LowPart = fStart.dwLowDateTime;
     uiStart.HighPart = fStart.dwHighDateTime;
@@ -80,7 +80,7 @@ int AntiDbg::CheckForLocalTime(Func func)
 } 
 
 
-int AntiDbg::CheckForQPC(Func func) 
+DWORD64 AntiDbg::CheckForQPC(Func func) 
 {
     LARGE_INTEGER start, end, frequency;
     QueryPerformanceCounter(&start);
@@ -93,9 +93,20 @@ int AntiDbg::CheckForQPC(Func func)
 }
 
 
-int AntiDbg::CheckForDebugger(Func func, AntiDbgMethod method)
+DWORD64 AntiDbg::CheckForRDTSC(Func func) {
+    DWORD64 start = __rdtsc();
+
+    func(); 
+
+    DWORD64 end = __rdtsc();
+
+    return (end - start);
+}
+
+
+DWORD64 AntiDbg::CheckForDebugger(Func func, AntiDbgMethod method)
 {
-    int elapsed{ 0 };
+    DWORD64 elapsed{ 0 };
     switch (method) 
     {
     case TICK_COUNT:
@@ -106,6 +117,10 @@ int AntiDbg::CheckForDebugger(Func func, AntiDbgMethod method)
         break;
     case QPC:
         elapsed = CheckForQPC(func);
+        break;
+    case RDTSC:
+        elapsed = CheckForRDTSC(func);
+        if (elapsed >= MAX_ALLOWED_CYCLES) { /* suspicious */ }
         break;
     }
 

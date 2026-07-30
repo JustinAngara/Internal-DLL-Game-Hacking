@@ -5,8 +5,11 @@
 #include "Game/Game.h"
 // anti cheat, anti dbg, obfuscation tester, random stuff3
 
+constexpr int MAX_TIME_TO_SLEEP = 5000;
 
-DWORD WINAPI ThreadMain(LPVOID p) {
+
+DWORD WINAPI ThreadMain(LPVOID p) 
+{
 
     Game g;
     Game::s_instance = &g;
@@ -25,16 +28,14 @@ DWORD WINAPI ThreadMain(LPVOID p) {
 
         // We are going to use our debugger tester and pass in our game loop to see 
         // if a debugger is present in respect to time
-        if (AntiDbg::CheckForDebugger(fGameIterator, AntiDbg::TICK_COUNT) > 5000)
+        if (AntiDbg::CheckForDebugger(fGameIterator, AntiDbg::TICK_COUNT) > MAX_TIME_TO_SLEEP)
         {
             std::cout << "DEBUGGERR PRESENT\n";
         }
 
+        printf("\nPress enter to move to next iteration.\n");
 
-
-
-
-        Sleep(3000);// more game loop to check out cheat engine and stuff
+        std::cin.get();
 
     }
     return 0;
@@ -50,7 +51,6 @@ int main()
 
 
 	printf("Press enter to exit.\n");
-	std::cin.get();
-
+	
 	return 0;
 }

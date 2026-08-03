@@ -9,12 +9,17 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src/*.asm"
+    "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.asm"
 )
 message(STATUS "DLL sources found: ${SOURCES}")
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src/*.inl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.inl"
 )
 
 add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS})

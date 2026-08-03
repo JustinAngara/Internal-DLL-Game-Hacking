@@ -5,6 +5,8 @@
 #include "Game/GameManagement.h"
 #include <Windows.h>
 #include "Gui/Gui.h"
+
+// might become nopped idk
 void Main::entrypoint()
 {
 

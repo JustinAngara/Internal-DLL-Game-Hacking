@@ -98,8 +98,15 @@ target_compile_definitions(AntiCheatTester PRIVATE
 )
 
 target_compile_options(AntiCheatTester PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/Od /Ob0>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O0>
+    $<$<CXX_COMPILER_ID:MSVC>:/Od /Ob0 /Zi>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O0 -g>
+)
+target_link_options(AntiCheatTester PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/DEBUG>
+)
+
+target_link_options(AntiCheatTester PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/DEBUG /DYNAMICBASE:NO>
 )
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)

@@ -7,19 +7,26 @@
 
 constexpr int MAX_TIME_TO_SLEEP = 5000;
 
+Game* Game::s_instance = nullptr;
+static Game g_game;          
 
 DWORD WINAPI GameThread(LPVOID p)
 {
-    std::cout << "we are in game thread\n";
-    Game g;
-    Game::s_instance = &g;
+    Game::s_instance = &g_game;
 
     Func fGameIterator = &Game::RunTrampoline;   
 
     while (true)
     {
-        
-        fGameIterator();
+        std::cout << "\n\n\n";
+        if (AntiDbg::CheckForDebugger(fGameIterator, AntiDbg::TICK_COUNT) > 5000)
+        {
+            std::cout << "\nDEBUGGER:\n->TIME FLAGGED\n";
+        } 
+        else
+        {
+            std::cout << "\nDEBUGGER:\n->TIME NOT FLAGGED\n";
+        }
         
         printf("\nPress enter to move to next iteration.\n");
 
@@ -34,11 +41,11 @@ DWORD WINAPI ThreadMain(LPVOID p)
         // just the debuggerpresentmethod
         if (IsDebuggerPresent())
         {
-            std::cout << "DEBUGGER PRESENT TEST";
+            //std::cout << "DEBUGGER PRESENT TEST";
         }
         else
         {
-            std::cout << "DEBUGGER NOT PRESENT";
+            //std::cout << "DEBUGGER NOT PRESENT";
 
         }
         

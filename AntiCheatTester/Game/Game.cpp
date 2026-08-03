@@ -1,7 +1,7 @@
 #include "Game.h"
 #include <iostream>
 #include <Windows.h>
-Game* Game::s_instance = nullptr;
+
 // random pseudo logic
 void Game::Run() 
 {

@@ -8,32 +8,45 @@ static NtQueryInformationThread_t fnNtQueryInformationThread = NULL;
 static NtSetInformationThread_t   fnNtSetInformationThread   = NULL;
 
 
-int AntiDbg::RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain)
+HANDLE AntiDbg::RunThreadEx(LPTHREAD_START_ROUTINE ThreadEx)
+{
+    DWORD dwThreadId = 0;
+    HANDLE hThread = CreateThread(NULL, 0, ThreadEx, NULL, 0, &dwThreadId);
+    if (!hThread) 
+    {
+        return NULL;
+    }
+
+    return hThread;
+}
+
+HANDLE AntiDbg::RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain)
 {
     DWORD dwThreadId = 0;
     HANDLE hThread = CreateThread(NULL, 0, ThreadMain, NULL, 0, &dwThreadId);
-    if (!hThread) return -1;
+    if (!hThread) 
+    {
+        return NULL;
+    }
 
     HMODULE hDLL = LoadLibraryW(L"ntdll.dll");
-    if (!hDLL) return -1;
+    if (!hDLL)
+    {
+        return hThread;
+    }
 
     fnNtQueryInformationThread = (NtQueryInformationThread_t)GetProcAddress(hDLL, "NtQueryInformationThread");
     fnNtSetInformationThread   = (NtSetInformationThread_t)GetProcAddress(hDLL, "NtSetInformationThread");
-    if (!fnNtQueryInformationThread || !fnNtSetInformationThread)
-        return -1;
+    if (!fnNtQueryInformationThread || !fnNtSetInformationThread) return hThread;
 
     BOOLEAN bHidden = FALSE;
     ULONG   lRet = 0;
-
     fnNtSetInformationThread(hThread, ThreadHideFromDebugger, NULL, 0);
     fnNtQueryInformationThread(hThread, ThreadHideFromDebugger, &bHidden, sizeof(bHidden), &lRet);
-
     printf("Thread is hidden: %s\n", bHidden ? "Yes" : "No");
 
-    WaitForSingleObject(hThread, INFINITE); 
-    return 0;
+    return hThread;             
 }
-
 
 DWORD64 AntiDbg::CheckForTickCount(Func func)
 {
@@ -67,9 +80,13 @@ DWORD64 AntiDbg::CheckForLocalTime(Func func)
     GetLocalTime(& sysend);
 
     if (!SystemTimeToFileTime(&sysend, &fEnd))
+    {
         return 0;
+    }
     if (!SystemTimeToFileTime(&sysStart, &fStart))
+    {
         return 0;
+    }
 
     uiStart.LowPart = fStart.dwLowDateTime;
     uiStart.HighPart = fStart.dwHighDateTime;

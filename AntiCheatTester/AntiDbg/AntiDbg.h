@@ -24,6 +24,6 @@ namespace AntiDbg
 	DWORD64 CheckForRDTSC(Func func);
 
 	DWORD64 CheckForDebugger(Func func, AntiDbgMethod method = TICK_COUNT);
-	int RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain);
-
+	HANDLE RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain);
+	HANDLE RunThreadEx(LPTHREAD_START_ROUTINE ThreadEx);
 }

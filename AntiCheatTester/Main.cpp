@@ -8,49 +8,57 @@
 constexpr int MAX_TIME_TO_SLEEP = 5000;
 
 
-DWORD WINAPI ThreadMain(LPVOID p) 
+DWORD WINAPI GameThread(LPVOID p)
 {
-
+    std::cout << "we are in game thread\n";
     Game g;
     Game::s_instance = &g;
 
     Func fGameIterator = &Game::RunTrampoline;   
 
+    while (true)
+    {
+        
+        fGameIterator();
+        
+        printf("\nPress enter to move to next iteration.\n");
 
+        std::cin.get();
 
-    // pseudo game loop
+    }
+}
+DWORD WINAPI ThreadMain(LPVOID p) 
+{
+    // this is where the anti cheat would live for repeated calls
     while (true) {
         // just the debuggerpresentmethod
         if (IsDebuggerPresent())
         {
             std::cout << "DEBUGGER PRESENT TEST";
         }
-
-        // We are going to use our debugger tester and pass in our game loop to see 
-        // if a debugger is present in respect to time
-        if (AntiDbg::CheckForDebugger(fGameIterator, AntiDbg::TICK_COUNT) > MAX_TIME_TO_SLEEP)
+        else
         {
-            std::cout << "DEBUGGERR PRESENT\n";
+            std::cout << "DEBUGGER NOT PRESENT";
+
         }
-
-        printf("\nPress enter to move to next iteration.\n");
-
-        std::cin.get();
-
+        
+        Sleep(5000);
+        
     }
     return 0;
 }
 
 int main()
 {
-	std::cout << "still in working\n";
+    std::cout << "still in working\n";
 
-    // this will be able to hook isdebuggerpresent 
-	 AntiDbg::RunHideThreadDebugger(ThreadMain);
+    HANDLE hGame    = AntiDbg::RunThreadEx(GameThread);
+    HANDLE hAntiDbg = AntiDbg::RunHideThreadDebugger(ThreadMain);
 
+    HANDLE handles[] = { hGame, hAntiDbg };
+    WaitForMultipleObjects(2, handles, TRUE, INFINITE); 
 
-
-	printf("Press enter to exit.\n");
-	
-	return 0;
+    CloseHandle(hGame);
+    CloseHandle(hAntiDbg);
+    return 0;
 }

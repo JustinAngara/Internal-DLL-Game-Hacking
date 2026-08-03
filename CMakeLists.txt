@@ -97,6 +97,11 @@ target_compile_definitions(AntiCheatTester PRIVATE
     _UNICODE
 )
 
+target_compile_options(AntiCheatTester PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/Od /Ob0>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O0>
+)
+
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     target_link_libraries(AntiCheatTester PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src/ext/reserved_windows/ntdll/ntdll_x64.lib

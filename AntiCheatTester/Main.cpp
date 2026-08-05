@@ -5,6 +5,7 @@
 #include "../AntiCheatTester/AntiDbg/AntiDbg.h"
 #include "Vars.h"
 #include "Game/Game.h"
+#include "ProcessList/ProcessList.h"
 
 // anti cheat, anti dbg, obfuscation tester, random stuff3
 constexpr int MAX_TIME_TO_SLEEP = 5000;
@@ -98,9 +99,12 @@ void createChildProc(char* argv[])
     exit( -1 );
 }
 
-void childGuard(char* argv[])
+
+void childGuard(int argc, char* argv[])
 {
-    DWORD pid = atoi( argv[2] );
+    if (argc < 3) { printf("guard: missing pid arg\n"); exit(1); }
+
+    DWORD pid = atoi(argv[2]);
     HANDLE handle = OpenProcess( PROCESS_ALL_ACCESS, false, pid );
     if (pid != 0 || handle != INVALID_HANDLE_VALUE) {
         if (!DebugActiveProcess(pid))
@@ -121,16 +125,16 @@ void childGuard(char* argv[])
 
 int main(int argc, char* argv[])
 {
-    // check for arg values to know if to run or obtian a guard onto child proc
-    if (strcmp( argv[1], "0" ) == 0) 
+    const char* mode = (argc >= 2) ? argv[1] : "0";
+
+    if (strcmp(mode, "0") == 0)
     {
         createChildProc(argv);
     }
-    else 
+    else
     {
-        childGuard(argv);
+        childGuard(argc, argv);   // pass argc through so it can guard too
     }
-
 
     std::cout << "still in working\n";
 
@@ -144,5 +148,13 @@ int main(int argc, char* argv[])
 
     CloseHandle(hGame);
     CloseHandle(hAntiDbg);
+
+    ProcList::ListOutProcs();
+    
+    // ending stub
+    std::cout << "Press Enter to Exit.\n";
+    std::cin;
+    
     return 0;
+    
 }

@@ -1,10 +1,10 @@
 #include <Windows.h>
 #include <vector>
+#include "ScreenShot.h"
 
 
 
-
-bool SaveBmp(const wchar_t* path, const std::vector<BYTE>& pixels, LONG cx, LONG cy)
+bool ScreenShot::SaveBmp(const wchar_t* path, const std::vector<BYTE>& pixels, LONG cx, LONG cy)
 {
     BITMAPINFOHEADER bih{};
     bih.biSize     = sizeof(bih);
@@ -31,7 +31,7 @@ bool SaveBmp(const wchar_t* path, const std::vector<BYTE>& pixels, LONG cx, LONG
     return true;
 }
 
-bool TakeScreenshot(std::vector<BYTE>& pixels, LONG& outCx, LONG& outCy)
+bool ScreenShot::TakeScreenshot(std::vector<BYTE>& pixels, LONG& outCx, LONG& outCy)
 {
     HWND hwnd = FindWindowW(nullptr, L"title add implementation soon");
     if (!hwnd) return false;
@@ -51,14 +51,14 @@ bool TakeScreenshot(std::vector<BYTE>& pixels, LONG& outCx, LONG& outCy)
 
     BOOL blitOk = BitBlt(hdcDst, 0, 0, cx, cy, hdcSrc, 0, 0, SRCCOPY);
 
-    SelectObject(hdcDst, oldObj);          
+    SelectObject(hdcDst, oldObj);    
 
     BITMAPINFO info{};
     info.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
     info.bmiHeader.biWidth       = cx;
     info.bmiHeader.biHeight      = -cy;    
     info.bmiHeader.biPlanes      = 1;
-    info.bmiHeader.biBitCount    = 32;     // BGRA
+    info.bmiHeader.biBitCount    = 32; // BGRA
     info.bmiHeader.biCompression = BI_RGB;
 
     // save data into buffer

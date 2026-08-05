@@ -1,14 +1,20 @@
 #include <iostream>
 #include <Windows.h>
+#include <sstream>
+#include <string>
 #include "../AntiCheatTester/AntiDbg/AntiDbg.h"
 #include "Vars.h"
 #include "Game/Game.h"
-// anti cheat, anti dbg, obfuscation tester, random stuff3
 
+// anti cheat, anti dbg, obfuscation tester, random stuff3
 constexpr int MAX_TIME_TO_SLEEP = 5000;
 
 Game* Game::s_instance = nullptr;
 static Game g_game;          
+
+// headers
+void createChildProc(char* argv[]);
+void childGuard(char* argv[]);
 
 DWORD WINAPI GameThread(LPVOID p)
 {
@@ -55,13 +61,84 @@ DWORD WINAPI ThreadMain(LPVOID p)
     return 0;
 }
 
-int main()
+
+void createChildProc(char* argv[])
 {
+    printf( "create child proc..\n" );
+
+    STARTUPINFOA si;
+    PROCESS_INFORMATION pi;
+    std::stringstream stream;
+    stream << GetCurrentProcessId();
+
+    printf( "curr proc: %d\n", GetCurrentProcessId() );
+    std::string cmdArgs( argv[0] );
+    cmdArgs+= " 1 " + stream.str();
+    char* args = new char[cmdArgs.length() + 1];
+    strcpy_s( args, cmdArgs.length() + 1, cmdArgs.c_str());
+
+    ZeroMemory( &si, sizeof( si ) );
+    si.cb = sizeof( si );
+    ZeroMemory( &pi, sizeof( pi ) );
+
+    if (CreateProcessA(NULL, args, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+    {
+        printf( "succeded\n" );
+    }
+    else
+    {
+        printf( "%d\n", GetLastError() );
+    }
+
+
+    while (GetProcessId( pi.hProcess )) 
+    { 
+        Sleep( 2000 );
+    }
+    exit( -1 );
+}
+
+void childGuard(char* argv[])
+{
+    DWORD pid = atoi( argv[2] );
+    HANDLE handle = OpenProcess( PROCESS_ALL_ACCESS, false, pid );
+    if (pid != 0 || handle != INVALID_HANDLE_VALUE) {
+        if (!DebugActiveProcess(pid))
+        {
+            TerminateProcess( handle, -2 );
+        }
+        DWORD exitCode;
+
+        while (GetExitCodeProcess( handle, &exitCode )) 
+        {
+            // idle
+            Sleep( 2000 );
+        }
+    }
+
+    exit( -1 );
+}
+
+int main(int argc, char* argv[])
+{
+    // check for arg values to know if to run or obtian a guard onto child proc
+    if (strcmp( argv[1], "0" ) == 0) 
+    {
+        createChildProc(argv);
+    }
+    else 
+    {
+        childGuard(argv);
+    }
+
+
     std::cout << "still in working\n";
 
+    // setup threads
     HANDLE hGame    = AntiDbg::RunThreadEx(GameThread);
     HANDLE hAntiDbg = AntiDbg::RunHideThreadDebugger(ThreadMain);
 
+    // execution for threads
     HANDLE handles[] = { hGame, hAntiDbg };
     WaitForMultipleObjects(2, handles, TRUE, INFINITE); 
 

@@ -96,6 +96,8 @@ void createChildProc(char* argv[])
     { 
         Sleep( 2000 );
     }
+
+    CloseHandle(pi.hThread);
     exit( -1 );
 }
 

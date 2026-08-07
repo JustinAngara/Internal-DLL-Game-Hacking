@@ -13,9 +13,8 @@ constexpr int MAX_TIME_TO_SLEEP = 5000;
 Game* Game::s_instance = nullptr;
 static Game g_game;          
 
-// headers
-void createChildProc(char* argv[]);
-void childGuard(char* argv[]);
+
+
 
 DWORD WINAPI GameThread(LPVOID p)
 {
@@ -41,10 +40,13 @@ DWORD WINAPI GameThread(LPVOID p)
 
     }
 }
+
+
 DWORD WINAPI ThreadMain(LPVOID p) 
 {
     // this is where the anti cheat would live for repeated calls
-    while (true) {
+    while (true) 
+    {
         // just the debuggerpresentmethod
         if (IsDebuggerPresent())
         {
@@ -55,74 +57,13 @@ DWORD WINAPI ThreadMain(LPVOID p)
             //std::cout << "DEBUGGER NOT PRESENT";
 
         }
-        
-        Sleep(5000);
-        
+
+        // we give the validation whatever to this
+        AntiDbg::ChildProc::ValidateAliveChild();
+        AntiDbg::ChildProc::EnsureDebuggingOccurs();
+        Sleep(MAX_TIME_TO_SLEEP);
     }
     return 0;
-}
-
-
-void createChildProc(char* argv[])
-{
-    printf( "create child proc..\n" );
-
-    STARTUPINFOA si;
-    PROCESS_INFORMATION pi;
-    std::stringstream stream;
-    stream << GetCurrentProcessId();
-
-    printf( "curr proc: %d\n", GetCurrentProcessId() );
-    std::string cmdArgs( argv[0] );
-    cmdArgs+= " 1 " + stream.str();
-    char* args = new char[cmdArgs.length() + 1];
-    strcpy_s( args, cmdArgs.length() + 1, cmdArgs.c_str());
-
-    ZeroMemory( &si, sizeof( si ) );
-    si.cb = sizeof( si );
-    ZeroMemory( &pi, sizeof( pi ) );
-
-    if (CreateProcessA(NULL, args, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
-    {
-        printf( "succeded\n" );
-    }
-    else
-    {
-        printf( "%d\n", GetLastError() );
-    }
-
-
-    while (GetProcessId( pi.hProcess )) 
-    { 
-        Sleep( 2000 );
-    }
-
-    CloseHandle(pi.hThread);
-    exit( -1 );
-}
-
-
-void childGuard(int argc, char* argv[])
-{
-    if (argc < 3) { printf("guard: missing pid arg\n"); exit(1); }
-
-    DWORD pid = atoi(argv[2]);
-    HANDLE handle = OpenProcess( PROCESS_ALL_ACCESS, false, pid );
-    if (pid != 0 || handle != INVALID_HANDLE_VALUE) {
-        if (!DebugActiveProcess(pid))
-        {
-            TerminateProcess( handle, -2 );
-        }
-        DWORD exitCode;
-
-        while (GetExitCodeProcess( handle, &exitCode )) 
-        {
-            // idle
-            Sleep( 2000 );
-        }
-    }
-
-    exit( -1 );
 }
 
 int main(int argc, char* argv[])
@@ -131,11 +72,13 @@ int main(int argc, char* argv[])
 
     if (strcmp(mode, "0") == 0)
     {
-        createChildProc(argv);
+        AntiDbg::ChildProc::CreateChildProc(argv);
     }
     else
     {
-        childGuard(argc, argv);   // pass argc through so it can guard too
+        // this is child proc scope ; dont do anything
+        AntiDbg::ChildProc::ChildGuard(argc, argv);   // pass argc through so it can guard too
+        return 0; 
     }
 
     std::cout << "still in working\n";
@@ -155,7 +98,7 @@ int main(int argc, char* argv[])
     
     // ending stub
     std::cout << "Press Enter to Exit.\n";
-    std::cin;
+    std::cin.get();
     
     return 0;
     

@@ -26,4 +26,12 @@ namespace AntiDbg
 	DWORD64 CheckForDebugger(Func func, AntiDbgMethod method = TICK_COUNT);
 	HANDLE RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain);
 	HANDLE RunThreadEx(LPTHREAD_START_ROUTINE ThreadEx);
+
+	namespace ChildProc
+	{
+		void EnsureDebuggingOccurs();
+		void CreateChildProc(char* argv[]);
+		void ChildGuard(int argc, char* argv[]);
+		void ValidateAliveChild();
+	}
 }

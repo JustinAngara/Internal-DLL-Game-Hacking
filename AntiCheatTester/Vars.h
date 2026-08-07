@@ -8,3 +8,11 @@ typedef NTSTATUS (WINAPI *NtQueryInformationThread_t)(HANDLE, ULONG, PVOID, ULON
 typedef NTSTATUS (WINAPI *NtSetInformationThread_t)(HANDLE, ULONG, PVOID, ULONG);
 
 using Func = void(*)();   
+
+enum ChildState
+{
+    UNKNOWN,
+    ALIVE,
+    DEAD,
+    ERR
+};

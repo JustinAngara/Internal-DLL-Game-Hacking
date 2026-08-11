@@ -74,4 +74,3 @@ bool ScreenShot::TakeScreenshot(std::vector<BYTE>& pixels, LONG& outCx, LONG& ou
     outCy = cy;
     return blitOk && lines == cy;
 }
-

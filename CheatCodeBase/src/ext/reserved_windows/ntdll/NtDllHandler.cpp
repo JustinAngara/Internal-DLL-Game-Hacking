@@ -1,6 +1,6 @@
 
-#include "NtDllHandler.h"
 #include "ntdll.h"
+#include "NtDllHandler.h"
 #include <Windows.h>
 #include <TlHelp32.h>
 

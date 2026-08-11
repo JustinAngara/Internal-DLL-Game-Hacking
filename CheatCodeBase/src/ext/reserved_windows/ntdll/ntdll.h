@@ -1,6 +1,7 @@
 #pragma once
-#include <windows.h>
+#include <Windows.h>
 
+#include <TlHelp32.h>
 typedef LONG NTSTATUS;
 
 #define RTL_MAX_DRIVE_LETTERS 32

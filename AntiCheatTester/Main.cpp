@@ -7,9 +7,6 @@
 #include "Game/Game.h"
 #include "ProcessList/ProcessList.h"
 
-// anti cheat, anti dbg, obfuscation tester, random stuff3
-constexpr int MAX_TIME_TO_SLEEP = 5000;
-
 Game* Game::s_instance = nullptr;
 static Game g_game;          
 
@@ -25,15 +22,15 @@ DWORD WINAPI GameThread(LPVOID p)
     while (true)
     {
         std::cout << "\n\n\n";
-        if (AntiDbg::CheckForDebugger(fGameIterator, AntiDbg::TICK_COUNT) > 5000)
+        if (AntiDbg::CheckForDebugger(fGameIterator, AntiDbg::TICK_COUNT) > MAX_TIME_TO_DO_FUNC_CALL)
         {
-            std::cout << "\nDEBUGGER:\n->TIME FLAGGED\n";
+            std::cout << "\nDEBUGGER BP:\n->TIME FLAGGED\n";
         } 
         else
         {
-            std::cout << "\nDEBUGGER:\n->TIME NOT FLAGGED\n";
+            std::cout << "\nDEBUGGER BP:\n->TIME NOT FLAGGED\n";
         }
-        
+
         printf("\nPress enter to move to next iteration.\n");
 
         std::cin.get();
@@ -47,20 +44,23 @@ DWORD WINAPI ThreadMain(LPVOID p)
     // this is where the anti cheat would live for repeated calls
     while (true) 
     {
+        // only now start the anti-debug enforcement thread
+
         // just the debuggerpresentmethod
         if (IsDebuggerPresent())
         {
-            //std::cout << "DEBUGGER PRESENT TEST";
+            std::cout << "DEBUGGER PRESENT TEST IN THREAD MAIN";
         }
         else
         {
-            //std::cout << "DEBUGGER NOT PRESENT";
-
+            // std::cout << "DEBUGGER NOT PRESENT";
+            // scramble memory -> then crash
         }
 
         // we give the validation whatever to this
         AntiDbg::ChildProc::ValidateAliveChild();
         AntiDbg::ChildProc::EnsureDebuggingOccurs();
+
         Sleep(MAX_TIME_TO_SLEEP);
     }
     return 0;
@@ -83,6 +83,17 @@ int main(int argc, char* argv[])
 
     std::cout << "still in working\n";
 
+    
+    if (!AntiDbg::ChildProc::WaitForChildAttach(MAX_TIME_TO_ATTACH_DEBUGGER))
+    {
+        // fail
+        std::cout << "[FAILED]\n";
+        return 1;
+    }
+
+
+
+
     // setup threads
     HANDLE hGame    = AntiDbg::RunThreadEx(GameThread);
     HANDLE hAntiDbg = AntiDbg::RunHideThreadDebugger(ThreadMain);
@@ -95,11 +106,11 @@ int main(int argc, char* argv[])
     CloseHandle(hAntiDbg);
 
     ProcList::ListOutProcs();
-    
+
     // ending stub
     std::cout << "Press Enter to Exit.\n";
     std::cin.get();
-    
+
     return 0;
-    
+
 }

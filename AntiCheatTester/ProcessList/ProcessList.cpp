@@ -1,10 +1,9 @@
+#include "ProcessList.h"
 #include <Windows.h>
-#include <stdio.h>
 #include <tchar.h>
 #include <psapi.h>
-#include "ProcessList.h"
 
-void PrintProcessNameAndID( DWORD processID )
+void ProcList::PrintProcessNameAndID( DWORD processID )
 {
     TCHAR szProcessName[MAX_PATH] = TEXT("<unknown>");
 
@@ -28,7 +27,7 @@ void PrintProcessNameAndID( DWORD processID )
     
     if (szProcessName == L"google.exe")
     {
-        _tprintf(TEXT("fuck you google is here\n"));
+        _tprintf(TEXT("google is here\n"));
     }
     // Release the handle to the process.
     CloseHandle( hProcess );

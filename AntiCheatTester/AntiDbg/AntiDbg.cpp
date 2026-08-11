@@ -65,7 +65,7 @@ DWORD64 AntiDbg::CheckForTickCount(Func func)
 
     return elapsedTime;
 }
- 
+
 
 DWORD64 AntiDbg::CheckForLocalTime(Func func) 
 {
@@ -141,6 +141,6 @@ DWORD64 AntiDbg::CheckForDebugger(Func func, AntiDbgMethod method)
         break;
     }
 
-    
+
     return elapsed;
 }

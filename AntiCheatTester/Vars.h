@@ -16,3 +16,9 @@ enum ChildState
     DEAD,
     ERR
 };
+
+// anti cheat, anti dbg, obfuscation tester, random stuff3
+constexpr int MAX_TIME_TO_SLEEP           = 5000;
+constexpr int MAX_TIME_TO_ATTACH_DEBUGGER = 5000;
+constexpr int MAX_TIME_TO_DO_FUNC_CALL    = 2500;
+

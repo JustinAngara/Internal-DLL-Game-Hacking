@@ -29,6 +29,7 @@ namespace AntiDbg
 
 	namespace ChildProc
 	{
+		bool WaitForChildAttach(DWORD timeoutMs);
 		void EnsureDebuggingOccurs();
 		void CreateChildProc(char* argv[]);
 		void ChildGuard(int argc, char* argv[]);

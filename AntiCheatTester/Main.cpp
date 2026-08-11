@@ -17,12 +17,12 @@ DWORD WINAPI GameThread(LPVOID p)
 {
     Game::s_instance = &g_game;
 
-    Func fGameIterator = &Game::RunTrampoline;   
+    Func func = &Game::RunTrampoline; // basically a trampoline to game iterator   
 
     while (true)
     {
         std::cout << "\n\n\n";
-        if (AntiDbg::CheckForDebugger(fGameIterator, AntiDbg::TICK_COUNT) > MAX_TIME_TO_DO_FUNC_CALL)
+        if (AntiDbg::CheckForDebugger(func, AntiDbg::TICK_COUNT) > MAX_TIME_TO_DO_FUNC_CALL) // encapsulate to handle with unique units of time
         {
             std::cout << "\nDEBUGGER BP:\n->TIME FLAGGED\n";
         } 
@@ -55,6 +55,7 @@ DWORD WINAPI ThreadMain(LPVOID p)
         {
             // std::cout << "DEBUGGER NOT PRESENT";
             // scramble memory -> then crash
+            return 1234;
         }
 
         // we give the validation whatever to this
@@ -100,7 +101,7 @@ int main(int argc, char* argv[])
 
     // execution for threads
     HANDLE handles[] = { hGame, hAntiDbg };
-    WaitForMultipleObjects(2, handles, TRUE, INFINITE); 
+    WaitForMultipleObjects( sizeof(handles) / sizeof(handles[0] ), handles, TRUE, INFINITE);
 
     CloseHandle(hGame);
     CloseHandle(hAntiDbg);

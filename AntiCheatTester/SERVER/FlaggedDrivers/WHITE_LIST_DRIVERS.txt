@@ -1,0 +1,55 @@
+# note, most validate check path
+
+# core windows
+ntoskrnl.exe
+hal.dll
+kdcom.dll 
+kd.dll
+bootvid.dll
+
+# disk / storage
+disk.sys
+partmgr.sys
+storport.sys
+stornvme.sys
+classpnp.sys
+volmgr.sys
+volsnap.sys
+fltmgr.sys
+ntfs.sys
+fastfat.sys
+
+# networking
+tcpip.sys
+ndis.sys
+netio.sys
+wfplwf.sys
+rdbss.sys
+mrxsmb.sys
+
+# gpu 
+dxgkrnl.sys
+dxgmms2.sys
+nvlddmkm.sys      // nvidia
+amdkmdag.sys      // amd
+igdkmd64.sys      // intel integrated
+
+# usb / hid
+usbhub.sys
+usbhub3.sys
+usbxhci.sys
+hidclass.sys
+hidusb.sys
+kbdhid.sys
+mouhid.sys
+
+# audio
+portcls.sys
+ks.sys
+hdaudbus.sys
+
+# power
+pci.sys
+acpi.sys
+wmilib.sys
+pnpmem.sys

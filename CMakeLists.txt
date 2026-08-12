@@ -22,7 +22,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.inl"
 )
 
-add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS})
+add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS}            )
 target_compile_features(ProcessHooker PRIVATE cxx_std_17)
 target_include_directories(ProcessHooker PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src"
@@ -56,7 +56,7 @@ message(STATUS "Loader sources found: ${LOADER_SOURCES}")
 add_executable(Loader
     ${LOADER_SOURCES}
     "CheatCodeBase/src/ext/reserved_windows/ntdll/NtDllHandler.cpp"
-)
+            )
 target_compile_features(Loader PRIVATE cxx_std_17)
 target_include_directories(Loader PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Loader"
@@ -90,7 +90,7 @@ message(STATUS "Tester sources found: ${TESTER_SOURCES}")
 add_executable(AntiCheatTester
     ${TESTER_SOURCES}
     "CheatCodeBase/src/ext/reserved_windows/ntdll/NtDllHandler.cpp"
-)
+            )
 target_compile_features(AntiCheatTester PRIVATE cxx_std_17)
 target_include_directories(AntiCheatTester PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/AntiCheatTester"

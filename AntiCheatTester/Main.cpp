@@ -6,7 +6,7 @@
 #include "Vars.h"
 #include "Game/Game.h"
 #include "ProcessList/ProcessList.h"
-
+#include "GUI/GUI.h"
 Game* Game::s_instance = nullptr;
 static Game g_game;          
 
@@ -41,6 +41,10 @@ DWORD WINAPI GameThread(LPVOID p)
 
 DWORD WINAPI ThreadMain(LPVOID p) 
 {
+    // setup gui
+    GUI::Setup();
+    
+
     // this is where the anti cheat would live for repeated calls
     while (true) 
     {

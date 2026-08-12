@@ -102,6 +102,8 @@ target_compile_definitions(AntiCheatTester PRIVATE
     _UNICODE
 )
 
+target_link_libraries(AntiCheatTester PRIVATE d3d11 dxgi d3dcompiler)
+
 target_compile_options(AntiCheatTester PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/Od /Ob0 /Zi>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O0 -g>

@@ -41,8 +41,6 @@ DWORD WINAPI GameThread(LPVOID p)
 
 DWORD WINAPI ThreadMain(LPVOID p) 
 {
-    // setup gui
-    GUI::Setup();
     
 
     // this is where the anti cheat would live for repeated calls
@@ -73,6 +71,10 @@ DWORD WINAPI ThreadMain(LPVOID p)
 
 int main(int argc, char* argv[])
 {
+
+    // setup gui
+    GUI::Run();
+    
     const char* mode = (argc >= 2) ? argv[1] : "0";
 
     if (strcmp(mode, "0") == 0)
@@ -117,5 +119,5 @@ int main(int argc, char* argv[])
     std::cin.get();
 
     return 0;
-
+    
 }

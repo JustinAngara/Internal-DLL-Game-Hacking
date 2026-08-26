@@ -1,5 +1,6 @@
 #include "MemoryPatcher.h"
 #include <Windows.h>
+#include "../ntdll/NtDllHandler.h"
 
 PVOID MemoryPatcher::ScanPatch(LPCSTR funcName)
 {

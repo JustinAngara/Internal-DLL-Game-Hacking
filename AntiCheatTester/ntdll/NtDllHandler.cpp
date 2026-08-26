@@ -1,6 +1,9 @@
 #include "NtDllHandler.h"
 #include <stdlib.h>
 
+
+extern "C" NTSTATUS NtQuerySystemInformation( SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID  SystemInformation, ULONG  SystemInformationLength, PULONG ReturnLength );
+
 int* NT::GetProcList()
 {
     int*  procList     = NULL;

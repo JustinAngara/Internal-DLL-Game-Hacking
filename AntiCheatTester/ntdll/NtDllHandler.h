@@ -2,8 +2,6 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 
-#pragma comment(lib, "ntdll_x64.lib")
-
 namespace NT
 {
     int* GetProcList();
@@ -138,4 +136,121 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 
 typedef LONG NTSTATUS;
 
-extern "C" NTSTATUS NtQuerySystemInformation( SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID  SystemInformation, ULONG  SystemInformationLength, PULONG ReturnLength );
+typedef struct _OBJECT_ATTRIBUTES {
+    ULONG Length;
+    HANDLE RootDirectory;
+    PUNICODE_STRING ObjectName;
+    ULONG Attributes;
+    PVOID SecurityDescriptor;
+    PVOID SecurityQualityOfService;
+} OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
+
+
+
+// SYSTEM PROC INFO
+typedef NTSTATUS(NTAPI* pNtQuerySystemInformation)(
+    SYSTEM_INFORMATION_CLASS SystemInformationClass,
+    PVOID SystemInformation,
+    ULONG SystemInformationLength,
+    PULONG ReturnLength
+);
+
+typedef NTSTATUS(NTAPI* pNtQueryInformationProcess)(
+    HANDLE ProcessHandle,
+    ULONG ProcessInformationClass,
+    PVOID ProcessInformation,
+    ULONG ProcessInformationLength,
+    PULONG ReturnLength
+);
+
+// EXECUTION CONTROL
+typedef NTSTATUS(NTAPI* pNtYieldExecution)();
+
+// MEMORY MANAGEMENT
+typedef NTSTATUS(NTAPI* pNtAllocateVirtualMemory)(
+    HANDLE ProcessHandle,
+    PVOID* BaseAddress,
+    ULONG_PTR ZeroBits,
+    PSIZE_T RegionSize,
+    ULONG AllocationType,
+    ULONG Protect
+);
+
+typedef NTSTATUS(NTAPI* pNtProtectVirtualMemory)(
+    HANDLE ProcessHandle,
+    PVOID* BaseAddress,
+    PSIZE_T RegionSize,
+    ULONG NewProtect,
+    PULONG OldProtect
+);
+
+typedef NTSTATUS(NTAPI* pNtReadVirtualMemory)(
+    HANDLE ProcessHandle,
+    PVOID BaseAddress,
+    PVOID Buffer,
+    SIZE_T NumberOfBytesToRead,
+    PSIZE_T NumberOfBytesRead
+);
+
+typedef NTSTATUS(NTAPI* pNtWriteVirtualMemory)(
+    HANDLE ProcessHandle,
+    PVOID BaseAddress,
+    PVOID Buffer,
+    SIZE_T NumberOfBytesToWrite,
+    PSIZE_T NumberOfBytesWritten
+);
+
+typedef NTSTATUS(NTAPI* pNtFreeVirtualMemory)(
+    HANDLE ProcessHandle,
+    PVOID* BaseAddress,
+    PSIZE_T RegionSize,
+    ULONG FreeType
+);
+
+typedef NTSTATUS(NTAPI* pNtQueryVirtualMemory)(
+    HANDLE ProcessHandle,
+    PVOID BaseAddress,
+    ULONG MemoryInformationClass,
+    PVOID MemoryInformation,
+    SIZE_T MemoryInformationLength,
+    PSIZE_T ReturnLength
+);
+
+// PROC thread maangement
+typedef NTSTATUS(NTAPI* pNtOpenProcess)(
+    PHANDLE ProcessHandle,
+    ACCESS_MASK DesiredAccess,
+    POBJECT_ATTRIBUTES ObjectAttributes, 
+    PCLIENT_ID ClientId
+);
+
+typedef NTSTATUS(NTAPI* pNtOpenThread)(
+    PHANDLE ThreadHandle,
+    ACCESS_MASK DesiredAccess,
+    POBJECT_ATTRIBUTES ObjectAttributes, 
+    PCLIENT_ID ClientId
+);
+
+typedef NTSTATUS(NTAPI* pNtCreateThreadEx)(
+    PHANDLE ThreadHandle,
+    ACCESS_MASK DesiredAccess,
+    PVOID ObjectAttributes,
+    HANDLE ProcessHandle,
+    PVOID StartRoutine,
+    PVOID Argument,
+    ULONG CreateFlags,
+    ULONG_PTR ZeroBits,
+    SIZE_T StackSize,
+    SIZE_T MaximumStackSize,
+    PVOID AttributeList
+);
+
+typedef NTSTATUS(NTAPI* pNtTerminateProcess)(
+    HANDLE ProcessHandle,
+    NTSTATUS ExitStatus
+);
+
+// HANDLES
+typedef NTSTATUS(NTAPI* pNtClose)(
+    HANDLE Handle
+);

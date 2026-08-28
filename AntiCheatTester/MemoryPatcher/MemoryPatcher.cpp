@@ -2,65 +2,79 @@
 #include <Windows.h>
 #include "../ntdll/NtDllHandler.h"
 
-PVOID MemoryPatcher::ScanPatch(LPCSTR funcName)
-{
-    HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
-    HMODULE ntdllMapped = LoadLibraryExA("ntdll.dll", NULL, DONT_RESOLVE_DLL_REFERENCES);
 
-    PVOID returnAddress = nullptr;
-    if (!ntdll || !ntdllMapped) return nullptr; 
+struct ModuleGuard {
+    HMODULE hModule;
+    ModuleGuard(HMODULE h) : hModule(h) {}
+    ~ModuleGuard() { if (hModule) FreeLibrary(hModule); } 
+};
+
+PVOID MemoryPatcher::ScanPatch(LPCSTR funcName){
+    HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
+    if (!ntdll) return nullptr;
+
+    HMODULE ntdllMapped = LoadLibraryExA("ntdll.dll", NULL, DONT_RESOLVE_DLL_REFERENCES);
+    if (!ntdllMapped) return nullptr; 
+
+    // recreated for free library to be called whenever out of scope
+    ModuleGuard guard(ntdllMapped); 
 
     try
     {
-        DWORD64 moduleBase = (DWORD64)ntdll;
         auto hookedFunc = (PVOID)GetProcAddress(ntdll, funcName);
+        if (!hookedFunc) return nullptr; 
+
+        DWORD64 moduleBase = (DWORD64)ntdll;
         auto funcData = RtlLookupFunctionEntry((DWORD64)hookedFunc, &moduleBase, nullptr);
+        if (!funcData) return nullptr;   
 
-        if (funcData) 
+        auto funcSize = funcData->EndAddress - funcData->BeginAddress;
+        auto originalFunc = (PVOID)GetProcAddress(ntdllMapped, funcName);
+        if (!originalFunc) return nullptr; 
+
+        auto result = RtlCompareMemory(hookedFunc, originalFunc, funcSize);
+
+        if (result != funcSize)
         {
-            auto funcSize = funcData->EndAddress - funcData->BeginAddress;
-            auto originalFunc = (PVOID)GetProcAddress(ntdllMapped, funcName);
-
-            if (hookedFunc && originalFunc) 
-            {
-                auto result = RtlCompareMemory(hookedFunc, originalFunc, funcSize);
-
-                if (result != funcSize)
-                {
-                    RunPatch(hookedFunc, originalFunc, funcSize);
-                }
-
-                returnAddress = hookedFunc;
-            }
+            RunPatch(hookedFunc, originalFunc, funcSize);
         }
+
+        return hookedFunc; 
     }
     catch (...)
     {
         return nullptr;
     }
-
-    if (ntdllMapped) 
-    {
-        FreeLibrary(ntdllMapped);
-    }
-    return returnAddress;
 }
-
 
 size_t MemoryPatcher::RunPatch(PVOID hookedFunc, PVOID originalFunc, DWORD funcSize)
 {
     DWORD oldprotect = 0;
 
-    // un proc mem
     VirtualProtect(hookedFunc, funcSize, PAGE_EXECUTE_READWRITE, &oldprotect);
-
-    // patch
     RtlCopyMemory(hookedFunc, originalFunc, funcSize);
+
     size_t result = RtlCompareMemory(hookedFunc, originalFunc, funcSize);
 
-    // restore
     DWORD dummy = 0;
     VirtualProtect(hookedFunc, funcSize, oldprotect, &dummy);
 
     return result;
+}
+
+void MemoryPatcher::PatchAll()
+{
+    const char* functionsToPatch[] = {
+        "NtReadVirtualMemory",
+        "NtWriteVirtualMemory",
+        "NtProtectVirtualMemory",
+        "NtQuerySystemInformation",
+        "NtOpenProcess",
+        "NtAllocateVirtualMemory",
+        "NtFreeVirtualMemory"
+    };
+
+    for (const char* funcName : functionsToPatch) {
+        ScanPatch(funcName);
+    }
 }

@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 {
 
     // setup gui
-    GUI::Run();
+    //GUI::Run();
     
     const char* mode = (argc >= 2) ? argv[1] : "0";
 

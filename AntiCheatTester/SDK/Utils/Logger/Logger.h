@@ -3,13 +3,15 @@
 #include <unordered_map>
 #include <memory>
 
-enum class SEVERITY {
+enum class SEVERITY 
+{
     LOW,
     NORMAL,
     HIGH
 };
 
-class LogBucket {
+class LogBucket 
+{
 public:
     LogBucket(std::string name) : m_name(name) {}
 
@@ -23,7 +25,8 @@ private:
     bool        m_isReadyToPublish = false; 
 };
 
-namespace Logger {
+namespace Logger 
+{
     inline std::string g_fileLoc = "";
     inline std::unordered_map<std::string, std::unique_ptr<LogBucket>> g_logBuckets{};
     

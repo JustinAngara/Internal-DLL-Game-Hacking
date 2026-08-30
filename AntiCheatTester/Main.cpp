@@ -7,6 +7,7 @@
 #include "Game/Game.h"
 #include "ProcessList/ProcessList.h"
 #include "GUI/GUI.h"
+#include "SDK/Utils/Logger/Logger.h"
 Game* Game::s_instance = nullptr;
 static Game g_game;          
 
@@ -74,7 +75,11 @@ int main(int argc, char* argv[])
 
     // setup gui
     //GUI::Run();
-    
+
+    Logger::RegisterBucket("MAIN");
+    Logger::GetInstanceOfBucket("MAIN")->setReadyToPublish(true);
+
+
     const char* mode = (argc >= 2) ? argv[1] : "0";
 
     if (strcmp(mode, "0") == 0)
@@ -101,6 +106,8 @@ int main(int argc, char* argv[])
 
 
 
+    ProcList::ListOutProcs();
+
     // setup threads
     HANDLE hGame    = AntiDbg::RunThreadEx(GameThread);
     HANDLE hAntiDbg = AntiDbg::RunHideThreadDebugger(ThreadMain);
@@ -111,8 +118,6 @@ int main(int argc, char* argv[])
 
     CloseHandle(hGame);
     CloseHandle(hAntiDbg);
-
-    ProcList::ListOutProcs();
 
     // ending stub
     std::cout << "Press Enter to Exit.\n";

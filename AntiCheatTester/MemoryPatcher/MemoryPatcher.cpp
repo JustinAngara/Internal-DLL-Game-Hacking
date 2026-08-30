@@ -1,15 +1,15 @@
 #include "MemoryPatcher.h"
 #include <Windows.h>
-#include "../ntdll/NtDllHandler.h"
 
-
-struct ModuleGuard {
+struct ModuleGuard 
+{
     HMODULE hModule;
     ModuleGuard(HMODULE h) : hModule(h) {}
     ~ModuleGuard() { if (hModule) FreeLibrary(hModule); } 
 };
 
-PVOID MemoryPatcher::ScanPatch(LPCSTR funcName){
+PVOID MemoryPatcher::ScanPatch(LPCSTR funcName)
+{
     HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
     if (!ntdll) return nullptr;
 
@@ -74,7 +74,8 @@ void MemoryPatcher::PatchAll()
         "NtFreeVirtualMemory"
     };
 
-    for (const char* funcName : functionsToPatch) {
+    for (const char* funcName : functionsToPatch) 
+    {
         ScanPatch(funcName);
     }
 }

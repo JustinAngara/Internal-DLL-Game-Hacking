@@ -44,6 +44,8 @@ struct EnumWindowsCallback_Data
 #define SR_ERR_SUCCESS                  0x00000000
 #define SR_ERR_INVALID_LAUNCH_METHOD    0x00000001
 #define SR_ERR_FILE_DOESNT_EXIST        0x00000002
+#define SR_ERR_OPEN_FILE                0x00000003
+#define SR_ERR_FILE_SIZE                0x00000004
 
 #define SR_NTCTE_ERR_NTCTE_MISSING      0x10000001
 #define SR_NTCTE_ERR_CANT_ALLOC_MEM     0x10000002
@@ -77,5 +79,6 @@ struct EnumWindowsCallback_Data
 #define SR_QUAPC_ERR_T32FIRST_FAIL  0x40000004
 #define SR_QUAPC_ERR_NO_APC_THREAD  0x40000005
 
+#define SR_MANUAL_ERR_CANT_ALLOC_MEM 0x50000001
 
 #define NT_FAIL(status) (status < 0)

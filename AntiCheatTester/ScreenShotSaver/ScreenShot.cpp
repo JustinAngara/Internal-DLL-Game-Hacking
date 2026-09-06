@@ -77,5 +77,5 @@ bool ScreenShot::TakeScreenshot(std::vector<BYTE>& pixels, LONG& outCx, LONG& ou
 
 bool ScreenShot::SendScreenToServer()
 {
-
+    return false;
 }

@@ -28,4 +28,7 @@ namespace HWID
 	
 	// send to db
 	int SendToServer(Info f);
+	
+	bool Compare(Info i1, Info i2); // this will be used for db stuff because we want to book keep how many times a hwid changes
+
 }

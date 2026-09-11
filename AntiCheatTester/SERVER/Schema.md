@@ -5,6 +5,11 @@
 - embedded message to deobfuscate payload correctly
 - to deobfuscate/obfuscate, we account for the game tick sent and should be within a reasonable buffer for a sent time
 - make it HWID dependent to prevent distribution
+- Driver list, we should know what drivers, size of driver count, and then do a check if there is a mismatch
+
+# Flow
+- Each detection is going to be flagged
+
 
 # Schema, expectations, etc
 

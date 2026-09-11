@@ -1,5 +1,10 @@
 #pragma once
 
+#include <array>
+#include <cstddef> // Required for std::byte
+
+
+
 #define PAYLOAD_SENT 0x1000;
 
 #define PAYLOAD_ACK 0x2000;
@@ -8,12 +13,11 @@
 
 // we are going to fix soon
 // and we are going to think about what we want to do in terms of architecture
-
 namespace Network
 {
 	class Payload
 	{
-		virtual void Send();
+		virtual int Send(std::byte* byteArr, size_t size);
 	};
 	
 	

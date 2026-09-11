@@ -1,9 +1,14 @@
 
+# IDEA BOARD
+- Create something to track time
+- to track game tick sent
+- embedded message to deobfuscate payload correctly
+- to deobfuscate/obfuscate, we account for the game tick sent and should be within a reasonable buffer for a sent time
+- make it HWID dependent to prevent distribution
 
 # Schema, expectations, etc
 
 # Call from client to server
-
 
 {
 

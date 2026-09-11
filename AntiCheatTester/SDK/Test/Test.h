@@ -11,9 +11,9 @@ public:
 	void Run(); // make sure to run isCalled, then m_func();
 private:
 	std::string m_name;
-	bool        isCalled;
+	bool        m_isCalled;
 	TestFunc    m_func;
-	bool        isSuccessful;
+	bool        m_isSuccessful;
 };
 
 // enable tester

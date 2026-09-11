@@ -1,10 +1,13 @@
+#pragma once
 #include "../Polymorphic.h"
 
 namespace Helper
 {
 
+    // this doesn't help with the change of polymorphic, it just measures it
     namespace Hashing
     {
+
         inline uint64_t fnv1a(const uint8_t* data, size_t len);
 
         inline size_t func_len(const void* fn, size_t cap = 512);

@@ -102,7 +102,6 @@
 #define DETOURS_ARM64
 
 #else
-#error Unknown architecture (x86, amd64, ia64, arm, arm64)
 #endif
 
 #ifdef _WIN64

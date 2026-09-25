@@ -1,12 +1,15 @@
 #include "HideScreenshot.h"
-#include "../../ext/detours/detours.h"
 #include <Windows.h>
+#include "../../ext/detours/detours.h"
 #include <iostream>
+
+
 
 typedef BOOL(WINAPI* BitBltPtr)(HDC, int, int, int, int, HDC, int, int, DWORD);
 BitBltPtr pBitBlt = nullptr;
 
-BOOL WINAPI HookedBitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop) {
+BOOL WINAPI HookedBitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop) 
+{
     std::cout << "Hooked func\n"; // TODO: UTILIZE LOGGER HERE
     
     return pBitBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop); 
@@ -21,7 +24,7 @@ BOOL DetourCleanup() {
     DetourUpdateThread(GetCurrentThread());
 
     // temporarily detatches our hook and restore
-    DetourDetach(&(PVOID&)pBitBlt, MyBitBlt);
+    DetourDetach(&(PVOID&)pBitBlt, HookedBitBlt);
 
     if (DetourTransactionCommit() == NO_ERROR) {
         std::cout << "Detatched hook\n";
@@ -45,7 +48,7 @@ void HideScreenshot::Run()
     
     DetourUpdateThread(GetCurrentThread());
 
-    DetourAttach(&(PVOID&)pBitBlt, MyBitBlt);
+    DetourAttach(&(PVOID&)pBitBlt, HookedBitBlt);
 
     // commits the transaction. If there is no error our hook is not rolled back.
     if (DetourTransactionCommit() == NO_ERROR) {

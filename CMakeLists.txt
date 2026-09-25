@@ -4,6 +4,29 @@ project(ProcessHooker LANGUAGES C CXX ASM_MASM)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
              PROPERTY VS_STARTUP_PROJECT Loader)
 
+# DETOURS
+set(DETOURS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src/ext/detours)
+
+add_library(detours STATIC
+    ${DETOURS_DIR}/detours.cpp
+    ${DETOURS_DIR}/modules.cpp
+    ${DETOURS_DIR}/disasm.cpp
+    ${DETOURS_DIR}/image.cpp
+    ${DETOURS_DIR}/creatwth.cpp
+    ${DETOURS_DIR}/disolx86.cpp
+    ${DETOURS_DIR}/disolx64.cpp
+    ${DETOURS_DIR}/disolia64.cpp
+    ${DETOURS_DIR}/disolarm.cpp
+    ${DETOURS_DIR}/disolarm64.cpp
+)
+target_include_directories(detours PUBLIC ${DETOURS_DIR})
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    target_compile_definitions(detours PUBLIC _AMD64_)
+else()
+    target_compile_definitions(detours PUBLIC _X86_)
+endif()
+target_compile_options(detours PRIVATE /FIwindows.h)
+
 #Process Hooker
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src/*.cpp"
@@ -13,6 +36,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.asm"
 )
+list(FILTER SOURCES EXCLUDE REGEX ".*/ext/detours/.*")
 message(STATUS "DLL sources found: ${SOURCES}")
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
@@ -21,8 +45,9 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/CounterStrike/*.inl"
 )
+list(FILTER HEADERS EXCLUDE REGEX ".*/ext/detours/.*")
 
-add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS}            )
+add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS})
 target_compile_features(ProcessHooker PRIVATE cxx_std_17)
 target_include_directories(ProcessHooker PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src"
@@ -35,6 +60,9 @@ target_compile_definitions(ProcessHooker PRIVATE
     UNICODE
     _UNICODE
 )
+target_link_libraries(ProcessHooker PRIVATE detours)
+
+target_compile_options(ProcessHooker PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:/FIwindows.h>)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     target_link_libraries(ProcessHooker PRIVATE
@@ -56,7 +84,7 @@ message(STATUS "Loader sources found: ${LOADER_SOURCES}")
 add_executable(Loader
     ${LOADER_SOURCES}
     "CheatCodeBase/src/ext/reserved_windows/ntdll/NtDllHandler.cpp"
-            )
+)
 target_compile_features(Loader PRIVATE cxx_std_17)
 target_include_directories(Loader PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Loader"
@@ -90,7 +118,7 @@ message(STATUS "Tester sources found: ${TESTER_SOURCES}")
 add_executable(AntiCheatTester
     ${TESTER_SOURCES}
     "CheatCodeBase/src/ext/reserved_windows/ntdll/NtDllHandler.cpp"
-            )
+)
 target_compile_features(AntiCheatTester PRIVATE cxx_std_17)
 target_include_directories(AntiCheatTester PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/AntiCheatTester"
@@ -108,10 +136,6 @@ target_compile_options(AntiCheatTester PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/Od /Ob0 /Zi>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O0 -g>
 )
-target_link_options(AntiCheatTester PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/DEBUG>
-)
-
 target_link_options(AntiCheatTester PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/DEBUG /DYNAMICBASE:NO>
 )

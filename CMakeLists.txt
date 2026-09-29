@@ -157,4 +157,4 @@ add_dependencies(AntiCheatTester ProcessHooker)
 
 
 # To ignore Driver
-list(FILTER SOURCES EXCLUDE REGEX "^${CMAKE_SOURCE_DIR}/Driver/")
+list(FILTER SOURCES EXCLUDE REGEX "/Driver/")

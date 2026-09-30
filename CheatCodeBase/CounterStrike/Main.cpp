@@ -2,6 +2,7 @@
 #include "Main.h"
 #include <stdio.h>
 #include <iostream>
+#include "../src/Obfuscation/Registery/ObfuscateRegister.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -15,6 +16,12 @@ DWORD WINAPI CS2::CounterStrikeThread(LPVOID lpParam)
     freopen_s(&console, "CONOUT$", "w", stdout);
 
     std::cout << "hello!\n";
+
+    ObfuscateRegister r;
+
+    r.Populate();
+    r.Run();
+
 
     while (true) 
     {

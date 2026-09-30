@@ -4,6 +4,7 @@
 #include "Obfuscation/Polymorphism/Polymorphic.h"
 #include "Obfuscation/Polymorphism/Helpers/Helper.h"
 #include "sdk/Math/Math.h"
+#include "../Utils/Structs.h"
 
 #include <Windows.h>   
 #include <cstring>     
@@ -134,8 +135,8 @@ namespace Test { namespace Obfuscation
                 continue;
             }
 
-            // --- Make the code writable, from the PAGE BASE, padded so the
-            //     handlers' addr-1 writes and forward imm reads stay in range. ---
+            // Make the code writable, from the PAGE BASE, padded so the
+            // handlers' addr-1 writes and forward imm reads stay in range
             uintptr_t pageBase = (uintptr_t)addr & ~(uintptr_t)0xFFF;
             SIZE_T    span     = (uintptr_t)addr + len - pageBase + 0x10;
 
@@ -185,7 +186,7 @@ namespace Test { namespace Obfuscation
         printf("done\n");
     }
     
-}} // namespace Test::Obfuscation
+}} 
 
 
 
@@ -198,5 +199,83 @@ namespace Test{namespace Utils
         PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
         PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)(base + dos->e_lfanew);
         return (return_address > base && return_address < (base + nt->OptionalHeader.SizeOfImage));
+    }
+}}
+
+
+
+
+
+
+
+
+/////////////////////////////////////////JPSGIDOGDSNOKPDGSNDGSNONODGKONDGS:LKN:LKNBJKRNJLNGJERJGNREJNGERKJNGKJERNGJLNN
+// AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+
+
+// this is going to be a testing namespace
+namespace Test {namespace Output
+{
+    void PrintFunc(Vars::Func f)
+    {
+        void* addr = (void*)f;
+
+        // Resolve JMP thunks (E9 rel32) before reading/mutating anything
+        uint8_t* p = (uint8_t*)addr;
+        int guard = 0;
+        while (p[0] == 0xE9 && guard++ < 8)
+        {
+            int32_t rel = *(int32_t*)(p + 1);
+            addr = (void*)((uintptr_t)p + 5 + rel);
+            p    = (uint8_t*)addr;
+        }
+
+        uint8_t before[8] = {0};
+        Helper::SEH::SafeReadBytes((uint8_t*)addr, before, 8);
+
+        size_t   len        = 0;
+        uint64_t beforeHash = 0;
+        if (!Helper::SEH::SafeMeasure(addr, &len, &beforeHash) || len == 0 || len > 0x4000)
+        {
+            printf("%p  SKIPPED (bad length)\n", addr);
+            return;
+        }
+
+        uintptr_t pageBase = (uintptr_t)addr & ~(uintptr_t)0xFFF;
+        SIZE_T    span      = (uintptr_t)addr + len - pageBase + 0x10;
+
+        DWORD prev = 0, tmp = 0;
+        if (!VirtualProtect((void*)pageBase, span, PAGE_EXECUTE_READWRITE, &prev))
+        {
+            printf("%p  VirtualProtect FAILED (err=%lu)\n", addr, GetLastError());
+            return;
+        }
+
+        CPolymorphic mute;
+        bool mutateOk = Helper::SEH::SafeMutate(&mute, (uintptr_t)addr);
+
+        VirtualProtect((void*)pageBase, span, prev, &tmp);
+        FlushInstructionCache(GetCurrentProcess(), addr, len);
+
+        uint64_t afterHash = beforeHash;
+        Helper::SEH::SafeHash(addr, &afterHash);
+
+        uint8_t after[8] = {0};
+        Helper::SEH::SafeReadBytes((uint8_t*)addr, after, 8);
+
+        const char* status = !mutateOk ? "CRASH"
+            : (beforeHash == afterHash) ? "SAME" : "DIFF";
+
+        printf("%p  len=%-4zu  %s\n", addr, len, status);
+        printf("  hash before: %016llx\n", (unsigned long long)beforeHash);
+        printf("  hash after:  %016llx\n", (unsigned long long)afterHash);
+
+        printf("  bytes before: ");
+        for (int i = 0; i < 8; ++i) printf("%02X ", before[i]);
+        printf("\n  bytes after:  ");
+        for (int i = 0; i < 8; ++i) printf("%02X ", after[i]);
+        printf("\n  byte diff:    ");
+        for (int i = 0; i < 8; ++i) printf(before[i] != after[i] ? " ^^ " : "    ");
+        printf("\n\n");
     }
 }}

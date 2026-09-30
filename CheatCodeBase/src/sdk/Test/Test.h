@@ -1,3 +1,6 @@
+#pragma once
+#include "../Utils/Structs.h"
+
 namespace Test
 {
 	inline bool g_isAllowedTesting = true;
@@ -12,4 +15,9 @@ namespace Test
 		bool IsInValidMemoryRegion(uint64_t return_address);
 	}
 
+
+	namespace Output
+	{
+		void PrintFunc(Vars::Func f);
+	}
 }

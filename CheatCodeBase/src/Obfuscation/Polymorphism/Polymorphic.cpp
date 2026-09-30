@@ -1,6 +1,7 @@
 #include "Polymorphic.h"
 #include "Mutators/Mutate.h"
 #include <iostream>
+#include "Helpers/Helper.h"
 
 void CPolymorphic::ObfuscateOpcode(uintptr_t dwAddress)
 {
@@ -114,11 +115,13 @@ void CPolymorphic::Run(uintptr_t dwStart)
     DWORD dwLength = CalculateFunctionSize(dwStart);
     if (dwLength == 0 || dwLength > 0x4000)
     {
+        std::cout << "failed return\n";
         return;
     }
 
     uintptr_t dwCurrent = dwStart;
     uintptr_t hardEnd   = dwStart + dwLength;
+
 
     // harness is responsible for making [dwStart, hardEnd) writable
     while (dwCurrent < hardEnd)
@@ -127,13 +130,15 @@ void CPolymorphic::Run(uintptr_t dwStart)
 
         // desync -> stop
         if (nOpcodeLen <= 0) break;
-
+     
         // spill -> stop
         if (dwCurrent + nOpcodeLen > hardEnd) break;   
 
         this->ObfuscateOpcode(dwCurrent);
         dwCurrent += nOpcodeLen;
     }
+
+
 }
 
 

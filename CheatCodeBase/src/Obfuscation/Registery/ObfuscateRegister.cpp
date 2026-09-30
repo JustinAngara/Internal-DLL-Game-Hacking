@@ -1,16 +1,31 @@
 #include "ObfuscateRegister.h"
 #include "../Polymorphism/Polymorphic.h"
+#include "../Polymorphism/Helpers/Helper.h"
+#include "../../sdk/Test/Test.h"
 #include "../SpoofReturnAddress/SpoofRet.h"
+#include <intrin.h>
+#include <iostream>
 
 void Foo()
 {
+// printing for now
+//	void* ret = _ReturnAddress();
+//
+//	printf("ret = 0x%p\n", ret);
+
+
 	int buf[2000];
 	char buff[2000];
 	bool lalala{1};
 
 	memset(buf,  1337, sizeof(buf));
 	memset(buff, 48, sizeof(buff));
-	
+	int a = 5;
+	int b = 67;
+	int c = a ^ b;
+	for (int i = 0; i < (c > 0 ? c % 10 : -c % 10); i++) {
+		c += (a * b) - i;
+	}
 	
 }
 
@@ -32,14 +47,19 @@ void ObfuscateRegister::Run()
 {
 	SpoofRet s; 
 	CPolymorphic c;
+
+
 	for (auto& e : tableFuncs)
 	{
 		// probably want to call spoof ret address
 		// polymorphic engine
 		uintptr_t funcAddr = reinterpret_cast<uintptr_t>(e.second);
-		c.Run(funcAddr);
+		//c.Run(funcAddr);
 		s.Run(e.second);
 
 	}
+
+
+	Test::Obfuscation::Run();
 }
 

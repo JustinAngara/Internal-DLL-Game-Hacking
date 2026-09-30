@@ -140,14 +140,12 @@ void add_num(int a, int b)
 
 void SpoofRet::Run(Vars::Func f)
 {
+
 	spoof_trampoline = (void*)jmp_rbx; // find a jmp rbx somewhere and go there
 	printf("spoof_trampoline = 0x%p\n", spoof_trampoline);
-	printf("OLD: Func_f = 0x%p\n", f);
-
 	printf("--------------------------\n");
 	printf("AFTER:\n");
 
 	spoof_call(f);
-	printf("NEW: Func_f = 0x%p\n", f);
 
 }

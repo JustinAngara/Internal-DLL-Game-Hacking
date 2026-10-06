@@ -5,20 +5,29 @@
 
 
 
-#define PAYLOAD_SENT 0x1000;
+#define PAYLOAD_SENT 0x200;
 
-#define PAYLOAD_ACK 0x2000;
+#define PAYLOAD_ACK 0x201;
 
-#define PAYLOAD_MALFORMED  0x9000;
+#define PAYLOAD_MALFORMED  0x400;
 
 // we are going to fix soon
 // and we are going to think about what we want to do in terms of architecture
 namespace Network
 {
+	struct Data {};
 	class Payload
 	{
-		virtual int Send(std::byte* byteArr, size_t size);
+	public:
+		Data GetData();
+	private:
+	
+		// switch to json later
+		std::byte* byteArr;
+		size_t size;
+
 	};
 	
+	uint64_t SendPayload(Payload p);
 	
 }

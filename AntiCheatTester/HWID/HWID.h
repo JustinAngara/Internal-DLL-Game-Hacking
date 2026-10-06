@@ -15,10 +15,10 @@ namespace HWID
 {
 	struct Info
 	{
-		std::string bios_info{};
-		std::string proc_info{};
-		std::string baseboard_info{};
-		std::string mem_device{};
+		std::string biosInfo{};
+		std::string procInfo{};
+		std::string baseboardInfo{};
+		std::string memDevice{};
 	};
 
 	void SetInfo();
@@ -28,6 +28,9 @@ namespace HWID
 	
 	// send to db
 	int SendToServer(Info f);
+
+
+	uint64_t getHash(Info f);
 	
 	bool Compare(Info i1, Info i2); // this will be used for db stuff because we want to book keep how many times a hwid changes
 

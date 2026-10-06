@@ -1,9 +1,8 @@
 #pragma once
 
-namespace ServerToClient
-{
-	struct Payload
-	{
+#include "../Network/Network.h"
 
-	};
-}
+class ServerToClient : Network::Payload
+{
+
+};

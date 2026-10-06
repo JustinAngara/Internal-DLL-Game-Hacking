@@ -9,9 +9,9 @@
 void Foo()
 {
 // printing for now
-//	void* ret = _ReturnAddress();
-//
-//	printf("ret = 0x%p\n", ret);
+	void* ret = _ReturnAddress();
+
+	printf("ret = 0x%p\n", ret);
 
 
 	int buf[2000];

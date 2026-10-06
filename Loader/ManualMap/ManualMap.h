@@ -12,7 +12,7 @@ using f_DLL_ENTRY_POINT = BOOL      (WINAPI*)(void* hDll, DWORD dwReason, void* 
 
 
 
-struct MANUAL_MAPPING
+struct MANUAL_MAPPING_DATA
 {
 	f_LoadLibraryA   pLoadLibraryA;
 	f_GetProcAddress pGetProcAddress;

@@ -92,6 +92,27 @@ DWORD ManualMap(HANDLE hProc, const char* szDllFile)
 		}
 	}
 
+	MANUAL_MAPPING_DATA data{ 0 };
+	data.pLoadLibraryA = LoadLibraryA;
+	data.pGetProcAddress = reinterpret_cast<f_GetProcAddress>(GetProcAddress);
+
+	auto* pSectionHeader = IMAGE_FIRST_SECTION(pOldNtHeader);
+	for (UINT i = 0; i != pOldFileHeader->NumberOfSections; ++i, ++pSectionHeader)
+	{
+		if (pSectionHeader->SizeOfRawData)
+		{
+			if (!WriteProcessMemory(hProc, pTargetBase + pSectionHeader->VirtualAddress, pSrcData + pSectionHeader->PointerToRawData, pSectionHeader->SizeOfRawData, nullptr))
+			{
+				printf("cant map secs");
+				delete[] pSrcData;
+				VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
+				return false;
+			}
+		}
+	}
+
+	memcpy(pSrcData, &data, sizeof(data));
+	WriteProcessMemory(hProc, pTargetBase, pSrcData, 0x1000, nullptr);
 
 
 }

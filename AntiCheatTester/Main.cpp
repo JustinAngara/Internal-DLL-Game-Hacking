@@ -37,10 +37,19 @@ DWORD WINAPI GameThread(LPVOID p)
         std::cin.get();
 
     }
+
+    return 0;
 }
 
+DWORD WINAPI GUIThread(LPVOID p)
+{
+    // setup gui
+    GUI::Run();
 
-DWORD WINAPI ThreadMain(LPVOID p) 
+    return 0;
+}
+
+DWORD WINAPI MainThread(LPVOID p) 
 {
     
 
@@ -72,9 +81,6 @@ DWORD WINAPI ThreadMain(LPVOID p)
 
 int main(int argc, char* argv[])
 {
-
-    // setup gui
-    //GUI::Run();
 
     Logger::RegisterBucket("MAIN");
     Logger::GetInstanceOfBucket("MAIN")->setReadyToPublish(true);
@@ -110,19 +116,19 @@ int main(int argc, char* argv[])
 
     // setup threads
     HANDLE hGame    = AntiDbg::RunThreadEx(GameThread);
-    HANDLE hAntiDbg = AntiDbg::RunHideThreadDebugger(ThreadMain);
+    HANDLE hGUI     = AntiDbg::RunThreadEx(GUIThread);
+    HANDLE hAntiDbg = AntiDbg::RunHideThreadDebugger(MainThread);
 
     // execution for threads
-    HANDLE handles[] = { hGame, hAntiDbg };
+    HANDLE handles[] = { hGame, hAntiDbg, hGUI };
     WaitForMultipleObjects( sizeof(handles) / sizeof(handles[0] ), handles, TRUE, INFINITE);
 
     CloseHandle(hGame);
     CloseHandle(hAntiDbg);
+    CloseHandle(hGUI);
 
     // ending stub
     std::cout << "Press Enter to Exit.\n";
     std::cin.get();
-
-    return 0;
     
 }

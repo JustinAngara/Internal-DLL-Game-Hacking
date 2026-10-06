@@ -207,6 +207,8 @@ namespace
                      ImGuiWindowFlags_NoMove     | ImGuiWindowFlags_NoCollapse |
                      ImGuiWindowFlags_NoBringToFrontOnFocus);
 
+
+        // this is where we update state
         static float f = 0.0f;
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
         if (ImGui::Button("Click me"))
@@ -226,9 +228,12 @@ void GUI::Run()
         return;
     }
 
+
+    // this is where we handle state
     while (PumpMessages())
     {
         RenderFrame();
+        
     }
 
     Shutdown();

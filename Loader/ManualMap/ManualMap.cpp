@@ -11,11 +11,12 @@ DWORD SR_ManualMap(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& L
 
 DWORD ManualMap(HANDLE hProc, const char* szDllFile)
 {
-	BYTE* pSrcData                      = nullptr;
-	IMAGE_NT_HEADERS* pOldNtHeader      = nullptr;
-	IMAGE_OPTIONAL_HEADER* interior_ptr = nullptr;
-	IMAGE_FILE_HEADER* pOldFileHeader   = nullptr;
-	BYTE* pTargetBase                   = nullptr;
+	BYTE* pSrcData                       = nullptr;
+	IMAGE_NT_HEADERS* pOldNtHeader       = nullptr;
+	IMAGE_OPTIONAL_HEADER* interior_ptr  = nullptr;
+	IMAGE_OPTIONAL_HEADER* pOldOptHeader = nullptr;
+	IMAGE_FILE_HEADER* pOldFileHeader    = nullptr;
+	BYTE* pTargetBase                    = nullptr;
 
 	DWORD dwCheck = 0;
 	if (!GetFileAttributesA(szDllFile))
@@ -47,6 +48,50 @@ DWORD ManualMap(HANDLE hProc, const char* szDllFile)
 	File.seekg(0,std::ios::beg);
 	File.read(reinterpret_cast<char*>(pSrcData), fileSize);
 	File.close();
+	
+
+	if (reinterpret_cast<IMAGE_DOS_HEADER*>(pSrcData)->e_magic != 0x5A4D) // 'MZ'
+	{
+		printf("invalid file\n");
+		delete[] pSrcData;
+		return false;
+	}
+
+	pOldNtHeader   = reinterpret_cast<IMAGE_NT_HEADERS*>(pSrcData + reinterpret_cast<IMAGE_DOS_HEADER*>(pSrcData)->e_lfanew);
+	pOldOptHeader  = &pOldNtHeader->OptionalHeader;
+	pOldFileHeader = &pOldNtHeader->FileHeader;
+
+
+
+#ifdef _WIN64
+	if (pOldFileHeader->Machine != IMAGE_FILE_MACHINE_AMD64)
+	{
+		printf("invalid platform");
+		delete[] pSrcData;
+		return false;
+	}
+
+#else
+	if (pOldFileHeader->Machine != IMAGE_FILE_MACHINE_I386)
+	{
+		printf("invalid platform");
+		delete[] pSrcData;
+		return false;
+	}
+#endif
+
+	pTargetBase = reinterpret_cast<BYTE*>( VirtualAllocEx(hProc, reinterpret_cast<void*>(pOldOptHeader->ImageBase), pOldOptHeader->SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
+	if (pTargetBase)
+	{
+		pTargetBase = reinterpret_cast<BYTE*>( VirtualAllocEx(hProc, nullptr, pOldOptHeader->SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
+		if (!pTargetBase)
+		{
+			printf("Memory Allocation Failed");
+			delete[] pSrcData;
+			return false;
+		}
+	}
+
 
 
 }

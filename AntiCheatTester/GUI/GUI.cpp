@@ -196,6 +196,19 @@ namespace
         GC::g_pSwapChain->Present(1, 0);
     }
 
+
+    
+    void drawSliders()
+    {
+        // this is where we update state
+        static float f = 0.0f;
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+        if (ImGui::Button("Click me"))
+        {
+            std::cout << "pressed" << '\n';
+        }
+        
+    }
     void DrawUI()
     {
         const ImGuiViewport* vp = ImGui::GetMainViewport();
@@ -205,20 +218,17 @@ namespace
         ImGui::Begin("Main", nullptr,
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize   |
                      ImGuiWindowFlags_NoMove     | ImGuiWindowFlags_NoCollapse |
-                     ImGuiWindowFlags_NoBringToFrontOnFocus);
+                     ImGuiWindowFlags_NoBringToFrontOnFocus                    
+        );
 
 
-        // this is where we update state
-        static float f = 0.0f;
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        if (ImGui::Button("Click me"))
-        {
-            std::cout << "test";
-        }
+        drawSliders();
 
         ImGui::End();
     }
 }
+
+
 
 void GUI::Run()
 {

@@ -7,6 +7,8 @@ public:
 		  : m_name(n), m_desc(d), m_isFlagged(f) { }
 
 public:
+
+public:
 	void setName(std::string n) { m_name = n; }
 	void setDesc(std::string d) { m_desc = d; }
 	void setFlag(bool f)        { m_isFlagged = f; }

@@ -18,7 +18,7 @@ add_library(detours STATIC
     ${DETOURS_DIR}/disolia64.cpp
     ${DETOURS_DIR}/disolarm.cpp
     ${DETOURS_DIR}/disolarm64.cpp
- "AntiCheatTester/ext/http/httplib.h" "AntiCheatTester/GUI/Containers/Features.h")
+ "AntiCheatTester/ext/http/httplib.h" "AntiCheatTester/GUI/Containers/Features.h" "AntiCheatTester/GUI/Containers/Features.cpp")
 target_include_directories(detours PUBLIC ${DETOURS_DIR})
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     target_compile_definitions(detours PUBLIC _AMD64_)
@@ -47,7 +47,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
 )
 list(FILTER HEADERS EXCLUDE REGEX ".*/ext/detours/.*")
 
-add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "AntiCheatTester/ext/http/httplib.h" "AntiCheatTester/GUI/Containers/Features.h")
+add_library(ProcessHooker SHARED ${SOURCES} ${HEADERS} "AntiCheatTester/ext/http/httplib.h" "AntiCheatTester/GUI/Containers/Features.h" "AntiCheatTester/GUI/Containers/Features.cpp")
 target_compile_features(ProcessHooker PRIVATE cxx_std_17)
 target_include_directories(ProcessHooker PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/CheatCodeBase/src"
@@ -84,7 +84,7 @@ message(STATUS "Loader sources found: ${LOADER_SOURCES}")
 add_executable(Loader
     ${LOADER_SOURCES}
     "CheatCodeBase/src/ext/reserved_windows/ntdll/NtDllHandler.cpp"
- "AntiCheatTester/ext/http/httplib.h" "AntiCheatTester/GUI/Containers/Features.h")
+ "AntiCheatTester/ext/http/httplib.h" "AntiCheatTester/GUI/Containers/Features.h" "AntiCheatTester/GUI/Containers/Features.cpp")
 target_compile_features(Loader PRIVATE cxx_std_17)
 target_include_directories(Loader PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Loader"
@@ -118,7 +118,7 @@ message(STATUS "Tester sources found: ${TESTER_SOURCES}")
 add_executable(AntiCheatTester
     ${TESTER_SOURCES}
     "CheatCodeBase/src/ext/reserved_windows/ntdll/NtDllHandler.cpp"
- "AntiCheatTester/ext/http/httplib.h" "AntiCheatTester/GUI/Containers/Features.h")
+ "AntiCheatTester/ext/http/httplib.h" "AntiCheatTester/GUI/Containers/Features.h" "AntiCheatTester/GUI/Containers/Features.cpp")
 target_compile_features(AntiCheatTester PRIVATE cxx_std_17)
 target_include_directories(AntiCheatTester PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/AntiCheatTester"

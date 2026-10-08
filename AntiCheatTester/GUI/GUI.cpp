@@ -116,7 +116,10 @@ namespace
 
         GC::g_hwnd = CreateWindowW(GC::g_wc.lpszClassName, GC::Title, BuildWindowStyle(),
                                    GC::X, GC::Y, GC::Width, GC::Height,
-                                   nullptr, nullptr, GC::g_wc.hInstance, nullptr);
+                                   nullptr, nullptr, GC::g_wc.hInstance, nullptr); 
+        
+        // set always on top
+        SetWindowPos(GC::g_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
         if (!GC::g_hwnd)
         {

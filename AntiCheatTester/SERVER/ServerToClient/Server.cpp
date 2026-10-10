@@ -1,5 +1,4 @@
 #include "Server.h"
-
 void ServerToClient::Listen()
 {
     if (server.is_running())
@@ -7,6 +6,9 @@ void ServerToClient::Listen()
         // fail
         return;
     }
+
+    std::cout << "Now listening\n";
+    std::cout << "Curl up\n";
 
     server.Post("/", [this](const httplib::Request &req, httplib::Response &res)
         {
@@ -24,7 +26,7 @@ void ServerToClient::Listen()
 
             // do other stuff
             // handle payload here
-
+            std::cout << "payload is here\n";
 
             res.status = PAYLOAD_SENT;
 

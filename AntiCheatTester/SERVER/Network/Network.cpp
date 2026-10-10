@@ -8,5 +8,5 @@
 
 int Network::SendData(Data d)
 {
-
+	return 1;
 }

@@ -2,7 +2,7 @@
 
 #include <array>
 #include <cstddef> // Required for std::byte
-
+#include "../../ext/json/json.hpp"
 
 
 #define PAYLOAD_SENT 0x200;
@@ -11,23 +11,19 @@
 
 #define PAYLOAD_MALFORMED  0x400;
 
+using json = nlohmann::json;
+
+	
 // we are going to fix soon
 // and we are going to think about what we want to do in terms of architecture
-namespace Network
+class Network
 {
-	struct Data {};
-	class Payload
+	struct Data
 	{
-	public:
-		Data GetData();
-	private:
-	
-		// switch to json later
-		std::byte* byteArr;
-		size_t size;
-
+		std::string ipAddr;
+		uint64_t    port;
+		json body;
 	};
-	
-	uint64_t SendPayload(Payload p);
-	
-}
+
+	uint64_t SendData(Data d);
+};

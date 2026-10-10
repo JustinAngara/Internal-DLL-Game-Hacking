@@ -2,7 +2,7 @@
 
 #include "../Network/Network.h"
 
-class ServerToClient : Network::Payload
+class ServerToClient : public Network
 {
 
 };

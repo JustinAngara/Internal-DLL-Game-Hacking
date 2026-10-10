@@ -25,7 +25,7 @@ private:
 
 };
 
-namespace Container
-{
-	
-}
+// Don't know if we need yet
+//namespace Container
+//{
+//}

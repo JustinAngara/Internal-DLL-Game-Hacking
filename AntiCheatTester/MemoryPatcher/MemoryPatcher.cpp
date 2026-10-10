@@ -33,6 +33,7 @@ PVOID MemoryPatcher::ScanPatch(LPCSTR funcName)
         if (!originalFunc) return nullptr; 
 
         auto result = RtlCompareMemory(hookedFunc, originalFunc, funcSize);
+        // if result is any different, flag it and confirm it is a attack
 
         if (result != funcSize)
         {
@@ -56,6 +57,8 @@ size_t MemoryPatcher::RunPatch(PVOID hookedFunc, PVOID originalFunc, DWORD funcS
 
     size_t result = RtlCompareMemory(hookedFunc, originalFunc, funcSize);
 
+   
+
     DWORD dummy = 0;
     VirtualProtect(hookedFunc, funcSize, oldprotect, &dummy);
 
@@ -64,14 +67,25 @@ size_t MemoryPatcher::RunPatch(PVOID hookedFunc, PVOID originalFunc, DWORD funcS
 
 void MemoryPatcher::PatchAll()
 {
+    // important functions to patching
     const char* functionsToPatch[] = {
+        // important stuff
         "NtReadVirtualMemory",
         "NtWriteVirtualMemory",
         "NtProtectVirtualMemory",
         "NtQuerySystemInformation",
+        "NtSetSystemInformation",
         "NtOpenProcess",
         "NtAllocateVirtualMemory",
-        "NtFreeVirtualMemory"
+        "NtFreeVirtualMemory",
+        // time bs
+        "NtGetTickCount",
+        "NtQueryPerformanceCounter",
+        "NtQuerySystemTime",
+        "RtlTimeFieldsToTime",
+        // APC
+        "NtQueueApcThread"
+
     };
 
     for (const char* funcName : functionsToPatch) 

@@ -8,5 +8,5 @@ To see if a arbritrary thread is 'spawned' and any operations is done (thus is a
 */
 namespace ThreadFinder
 {
-
+	
 }

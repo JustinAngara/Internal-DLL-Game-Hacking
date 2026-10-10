@@ -8,6 +8,7 @@
 #include "ProcessList/ProcessList.h"
 #include "GUI/GUI.h"
 #include "SDK/Utils/Logger/Logger.h"
+#include "SERVER/ServerToClient/Server.h"
 Game* Game::s_instance = nullptr;
 static Game g_game;          
 
@@ -82,6 +83,7 @@ DWORD WINAPI MainThread(LPVOID p)
 int main(int argc, char* argv[])
 {
 
+
     Logger::RegisterBucket("MAIN");
     Logger::GetInstanceOfBucket("MAIN")->setReadyToPublish(true);
 
@@ -130,5 +132,6 @@ int main(int argc, char* argv[])
     // ending stub
     std::cout << "Press Enter to Exit.\n";
     std::cin.get();
+    
     
 }

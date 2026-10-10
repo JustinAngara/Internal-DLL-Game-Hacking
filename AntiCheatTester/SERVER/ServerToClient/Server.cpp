@@ -3,7 +3,7 @@ void ServerToClient::Listen()
 {
     if (server.is_running())
     {
-        // fail
+        // fail, already called
         return;
     }
 
@@ -12,6 +12,7 @@ void ServerToClient::Listen()
 
     server.Post("/", [this](const httplib::Request &req, httplib::Response &res)
         {
+            std::cout << "raw body: [" << req.body << "]" << '\n';
             Network::Data d;
             json parsed = json::parse(req.body, nullptr, false);  
             if (parsed.is_discarded()) {

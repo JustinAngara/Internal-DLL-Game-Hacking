@@ -7,7 +7,9 @@
 
 class ServerToClient : public Network
 {
+public:
+	void Listen();
+private:
 	httplib::Server server;
 	std::mutex      dataMutex;
-	void Listen();
 };

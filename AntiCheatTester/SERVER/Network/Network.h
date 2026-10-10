@@ -3,7 +3,7 @@
 #include <array>
 #include <cstddef> // Required for std::byte
 #include "../../ext/json/json.hpp"
-
+#include "../../ext/http/httplib.h"
 
 #define PAYLOAD_SENT 0x200;
 
@@ -18,6 +18,7 @@ using json = nlohmann::json;
 // and we are going to think about what we want to do in terms of architecture
 class Network
 {
+public:
 	struct Data
 	{
 		std::string ipAddr;
@@ -25,5 +26,5 @@ class Network
 		json body;
 	};
 
-	uint64_t SendData(Data d);
+	int SendData(Data d);
 };

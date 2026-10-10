@@ -6,3 +6,7 @@
 //	return 0;
 //}
 
+int Network::SendData(Data d)
+{
+
+}

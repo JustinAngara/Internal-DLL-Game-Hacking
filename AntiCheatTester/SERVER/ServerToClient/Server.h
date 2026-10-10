@@ -4,5 +4,7 @@
 
 class ServerToClient : public Network
 {
-
+	httplib::Server server;
+	std::mutex      dataMutex;
+	void Listen();
 };

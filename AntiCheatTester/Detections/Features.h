@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
+
+using TestDetFunc = bool(*)();   
+
 class Feature
 {
 public:
@@ -18,11 +21,22 @@ public:
 	std::string getDesc() { return m_desc; }
 	bool        getFlag() { return m_isFlagged; }
 
+public:
+	void callCheckForDetection() // basically anytime you do ts you run it idrk how to explain
+	{ 
+		if (m_func())
+		{
+			setFlag(true);
+			return;
+		}
+		setFlag(false);
+	} 
 private:
 	// name, desc, isFlagged
 	std::string m_name;
 	std::string m_desc;
 	bool        m_isFlagged;
+	TestDetFunc m_func;
 
 };
 

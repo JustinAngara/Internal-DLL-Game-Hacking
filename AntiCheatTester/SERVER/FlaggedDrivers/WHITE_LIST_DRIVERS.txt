@@ -30,9 +30,12 @@ mrxsmb.sys
 # gpu 
 dxgkrnl.sys
 dxgmms2.sys
-nvlddmkm.sys      // nvidia
-amdkmdag.sys      // amd
-igdkmd64.sys      // intel integrated
+// nvidia
+nvlddmkm.sys      
+// amd
+amdkmdag.sys      
+// intel integrated
+igdkmd64.sys      
 
 # usb / hid
 usbhub.sys

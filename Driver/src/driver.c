@@ -1,4 +1,4 @@
-#include <ntddk.h>
+#include <ntifs.h>
 #include <wdf.h>
 #include "procdriver_ioctl.h"
 
@@ -56,6 +56,8 @@ static NTSTATUS CreateControlDevice(_In_ WDFDRIVER Driver)
     return STATUS_SUCCESS;
 }
 
+
+// entry point
 NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 {
     NTSTATUS          status;
@@ -82,6 +84,7 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
     return STATUS_SUCCESS;
 }
 
+// unload the driver
 VOID EvtDriverUnload(_In_ WDFDRIVER Driver)
 {
     UNREFERENCED_PARAMETER(Driver);

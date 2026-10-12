@@ -25,3 +25,5 @@ call "%VSDIR%\VC\Auxiliary\Build\vcvars64.bat" >nul || exit /b 1
 cd /d "%~dp0"
 cmake -S . -B "build\%CONFIG%" -G Ninja -DCMAKE_BUILD_TYPE=%CONFIG% || exit /b 1
 cmake --build "build\%CONFIG%" || exit /b 1
+
+

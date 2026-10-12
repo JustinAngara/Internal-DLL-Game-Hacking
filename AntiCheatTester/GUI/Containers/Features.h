@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 class Feature
 {
 public:
@@ -25,7 +26,3 @@ private:
 
 };
 
-// Don't know if we need yet
-//namespace Container
-//{
-//}

@@ -4,6 +4,7 @@
 #include "GUI.h"
 #include <string>
 #include <Windows.h>
+#include <ios>
 #include <d3d11.h>
 #include <tchar.h>
 #include <iostream>
@@ -108,9 +109,11 @@ namespace
         return style;
     }
 
+
     // create window
     bool Setup()
     {
+        GUI::State::PopulateFeatures();
         GC::g_wc = { sizeof(GC::g_wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGuiClass", nullptr };
         RegisterClassExW(&GC::g_wc);
 
@@ -201,7 +204,7 @@ namespace
 
 
     
-    void drawSliders()
+    void DrawFeatures()
     {
         // this is where we update state
         static float f = 0.0f;
@@ -210,6 +213,16 @@ namespace
         {
             std::cout << "pressed" << '\n';
         }
+
+        for (auto& e : GUI::State::g_features)
+        {
+            const auto flag = e.getFlag() ? "DETECTED" : "UNDETECTED";
+            const auto& strcat = e.getName() + " (" + e.getDesc() + ") = " + flag;
+            ImGui::TextUnformatted(strcat.c_str());
+            //ImGui::LabelText(e.getName().c_str(), nullptr);
+        }
+
+
         
     }
     void DrawUI()
@@ -225,7 +238,7 @@ namespace
         );
 
 
-        drawSliders();
+        DrawFeatures();
 
 
         ImGui::End();
@@ -233,6 +246,17 @@ namespace
 }
 
 
+
+
+
+void GUI::State::PopulateFeatures()
+{
+    Feature f1{};
+    g_features.emplace_back(f1);
+    g_features.emplace_back(f1);
+    g_features.emplace_back(f1);
+    g_features.emplace_back(f1);
+}
 
 void GUI::Run()
 {

@@ -41,7 +41,7 @@ namespace GUI
     namespace State
     {
         inline std::vector<Feature> g_features{};
-
+        void PopulateFeatures();
         
     }
     // creates, renders, exits

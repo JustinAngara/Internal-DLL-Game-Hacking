@@ -1,2 +1,6 @@
 # include whatever
 # add onto this whenever a driver is not signed by windows
+
+// severely flag this one, KDMapper utilizes this driver
+iqvw64e.sys
+

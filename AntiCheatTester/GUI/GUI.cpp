@@ -113,7 +113,7 @@ namespace
     // create window
     bool Setup()
     {
-        GUI::State::PopulateFeatures();
+        Detections::PopulateFeatures();
         GC::g_wc = { sizeof(GC::g_wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGuiClass", nullptr };
         RegisterClassExW(&GC::g_wc);
 
@@ -214,7 +214,7 @@ namespace
         //    std::cout << "pressed" << '\n';
         //}
 
-        for (auto& e : GUI::State::g_features)
+        for (auto& e : Detections::g_features)
         {
             const bool detected = e.getFlag();
 
@@ -252,18 +252,6 @@ namespace
     }
 }
 
-
-
-
-
-void GUI::State::PopulateFeatures()
-{
-    Feature f1{};
-    g_features.emplace_back(f1);
-    g_features.emplace_back(f1);
-    g_features.emplace_back(f1);
-    g_features.emplace_back(f1);
-}
 
 void GUI::Run()
 {

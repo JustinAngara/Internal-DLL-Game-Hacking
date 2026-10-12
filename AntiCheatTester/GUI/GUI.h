@@ -2,7 +2,8 @@
 #include "../ext/imgui/imgui.h"
 #include "../ext/imgui/imgui_impl_win32.h"
 #include "../ext/imgui/imgui_impl_dx11.h"
-#include "Containers/Features.h"
+#include "../Detections/Features.h"
+#include "../Detections/Detections.h"
 #include <Windows.h>
 #include <d3d11.h>
 #include <tchar.h>
@@ -38,12 +39,7 @@ namespace GUI
         inline UINT        g_ResizeWidth = 0, g_ResizeHeight = 0;
     }
 
-    namespace State
-    {
-        inline std::vector<Feature> g_features{};
-        void PopulateFeatures();
-        
-    }
+    
     // creates, renders, exits
     void Run();
 }

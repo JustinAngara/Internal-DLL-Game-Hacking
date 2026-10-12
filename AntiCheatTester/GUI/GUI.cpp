@@ -207,19 +207,26 @@ namespace
     void DrawFeatures()
     {
         // this is where we update state
-        static float f = 0.0f;
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        if (ImGui::Button("Click me"))
-        {
-            std::cout << "pressed" << '\n';
-        }
+        //static float f = 0.0f;
+        //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+        //if (ImGui::Button("Click me"))
+        //{
+        //    std::cout << "pressed" << '\n';
+        //}
 
         for (auto& e : GUI::State::g_features)
         {
-            const auto flag = e.getFlag() ? "DETECTED" : "UNDETECTED";
-            const auto& strcat = e.getName() + " (" + e.getDesc() + ") = " + flag;
-            ImGui::TextUnformatted(strcat.c_str());
-            //ImGui::LabelText(e.getName().c_str(), nullptr);
+            const bool detected = e.getFlag();
+
+            const ImVec4 status_color = detected
+                ? ImVec4(1.f, .3f, .3f, .7f)   // red
+                : ImVec4(.3f, 1.f, .3f, .7f);  // green
+
+            const std::string label = e.getName() + " (" + e.getDesc() + ")";
+
+            ImGui::TextColored(status_color, "%s", detected ? "[DETECTED]" : "[UNDETECTED]");
+            ImGui::SameLine();
+            ImGui::TextUnformatted(label.c_str());
         }
 
 

@@ -1,0 +1,4 @@
+# i don't know what to add here
+# cheat engine, reclass, ida, other reverse engineering tools
+# dont claim for detection; rather, claim for signature given those sigs
+# flag common build paths

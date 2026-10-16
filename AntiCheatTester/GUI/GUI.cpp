@@ -14,7 +14,6 @@ namespace GC = GUI::Config;
 
 namespace
 {
-    void DrawUI(); // annoying dependency call but want to restructure
     void CreateRenderTarget()
     {
         ID3D11Texture2D* pBackBuffer = nullptr;
@@ -193,7 +192,9 @@ namespace
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        DrawUI();
+
+        // call display
+        GUI::Display::DrawUI();
 
         ImGui::Render();
         GC::g_pd3dDeviceContext->OMSetRenderTargets(1, &GC::g_mainRenderTargetView, nullptr);
@@ -202,56 +203,53 @@ namespace
         GC::g_pSwapChain->Present(1, 0);
     }
 
-
-    
-    void DrawFeatures()
-    {
-        // this is where we update state
-        //static float f = 0.0f;
-        //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        //if (ImGui::Button("Click me"))
-        //{
-        //    std::cout << "pressed" << '\n';
-        //}
-
-        for (auto& e : Detections::g_features)
-        {
-            const bool detected = e.getFlag();
-
-            const ImVec4 status_color = detected
-                ? ImVec4(1.f, .3f, .3f, .7f)   // red
-                : ImVec4(.3f, 1.f, .3f, .7f);  // green
-
-            const std::string label = e.getName() + " (" + e.getDesc() + ")";
-
-            ImGui::TextColored(status_color, "%s", detected ? "[DETECTED]" : "[UNDETECTED]");
-            ImGui::SameLine();
-            ImGui::TextUnformatted(label.c_str());
-        }
-
-
-        
-    }
-    void DrawUI()
-    {
-        const ImGuiViewport* vp = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(vp->Pos);
-        ImGui::SetNextWindowSize(vp->Size);
-
-        ImGui::Begin("Main", nullptr,
-                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize   |
-                     ImGuiWindowFlags_NoMove     | ImGuiWindowFlags_NoCollapse |
-                     ImGuiWindowFlags_NoBringToFrontOnFocus                    
-        );
-
-
-        DrawFeatures();
-
-
-        ImGui::End();
-    }
 }
 
+
+
+void GUI::Display::DrawFeature(Feature e)
+{
+    const bool detected = e.getFlag();
+
+    const ImVec4 status_color = detected
+        ? ImVec4(1.f, .3f, .3f, .7f)   // red
+        : ImVec4(.3f, 1.f, .3f, .7f);  // green
+
+    const std::string label = e.getName() + " (" + e.getDesc() + ")";
+
+    ImGui::TextColored(status_color, "%s", detected ? "[DETECTED]" : "[UNDETECTED]");
+    ImGui::SameLine();
+    ImGui::TextUnformatted(label.c_str());
+}
+
+
+void GUI::Display::DrawAllFeatures()
+{
+
+    for (auto& e : Detections::g_features)
+    {
+        DrawFeature(e); // add certain flags to indicate whether or not we want to add sliders, additional descs, etc
+    }
+
+}
+void GUI::Display::DrawUI()
+{
+    const ImGuiViewport* vp = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(vp->Pos);
+    ImGui::SetNextWindowSize(vp->Size);
+
+    ImGui::Begin("Main", nullptr,
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize   |
+        ImGuiWindowFlags_NoMove     | ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoBringToFrontOnFocus                    
+    );
+
+
+    DrawAllFeatures();
+
+
+    ImGui::End();
+}
 
 void GUI::Run()
 {

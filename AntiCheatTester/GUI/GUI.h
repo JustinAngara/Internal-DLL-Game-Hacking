@@ -39,6 +39,12 @@ namespace GUI
         inline UINT        g_ResizeWidth = 0, g_ResizeHeight = 0;
     }
 
+    namespace Display
+    {
+        void DrawFeature(Feature e);
+        void DrawAllFeatures();
+        void DrawUI();
+    }
     
     // creates, renders, exits
     void Run();

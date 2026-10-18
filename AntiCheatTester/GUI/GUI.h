@@ -46,7 +46,7 @@ namespace GUI
 
     namespace Display
     {
-        inline std::string banter = "---------------------";
+        inline std::string banter = "-----------------------------------";
         void DrawFeature(Feature e);
         void DrawAllFeatures();
         void DrawUI();

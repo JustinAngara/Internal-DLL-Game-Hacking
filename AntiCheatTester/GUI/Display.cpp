@@ -12,18 +12,32 @@
 void GUI::Display::DrawStats()
 {
 
-    const ImVec4 statusColor = Colors::blue;  
-    std::string  debugged    = "Attached Debugger Status: " + AntiDbg::GetDebuggerStatus();
-    std::string  numOfDets   = "Number of Detections:" + Detections::g_detectionCount;
-    std::cout << debugged << '\n';
-    
-    ImGui::TextColored(statusColor, "%s", debugged.c_str());
-    ImGui::TextColored(statusColor, "%s", numOfDets.c_str());
+    // setup
+    const bool    debuggerAttached = AntiDbg::g_hChildState == ChildState::ALIVE;
+    const ImVec4  debugColor       = debuggerAttached ? Colors::green : Colors::red;
 
-    ImGui::TextColored(statusColor, "%s", banter.c_str());
+    const bool    hasDets     = Detections::g_detectionCount > 0;
+    const ImVec4  detColor    = hasDets ? Colors::red : Colors::green;
+
+    
+    std::string  debugged    = "Child Debugger";
+    std::string  numOfDets   = "Number of Detections";
+    std::string  debugTag    = "[" + AntiDbg::GetDebuggerStatus() + "]";
+    std::string  detTag      = "[" + std::to_string(Detections::g_detectionCount) + "]";
+
+
+    // display here
+    ImGui::TextColored(debugColor, "%s", debugTag.c_str());
+    ImGui::SameLine();
+    ImGui::TextColored(Colors::white, "%s", debugged.c_str());
+
+    ImGui::TextColored(detColor, "%s", detTag.c_str());
+    ImGui::SameLine();
+    ImGui::TextColored(Colors::white, "%s", numOfDets.c_str());
+
+    ImGui::TextColored(Colors::white, "%s", banter.c_str());
 
 }
-
 void GUI::Display::DrawFeature(Feature e)
 {
     const bool detected = e.getFlag();

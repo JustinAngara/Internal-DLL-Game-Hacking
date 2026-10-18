@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string>
 #include <Windows.h>
 #include "../Vars.h"
 
@@ -7,6 +7,7 @@
 
 namespace AntiDbg
 {
+	inline ChildState g_hChildState = UNKNOWN;
 	const DWORD64 MAX_ALLOWED_CYCLES = 50000000;
 	enum AntiDbgMethod
 	{
@@ -27,6 +28,8 @@ namespace AntiDbg
 	HANDLE RunHideThreadDebugger(LPTHREAD_START_ROUTINE ThreadMain);
 	HANDLE RunThreadEx(LPTHREAD_START_ROUTINE ThreadEx);
 
+	std::string GetDebuggerStatus();
+
 	namespace ChildProc
 	{
 		bool WaitForChildAttach(DWORD timeoutMs);
@@ -34,5 +37,6 @@ namespace AntiDbg
 		void CreateChildProc(char* argv[]);
 		void ChildGuard(int argc, char* argv[]);
 		void ValidateAliveChild();
+
 	}
 }

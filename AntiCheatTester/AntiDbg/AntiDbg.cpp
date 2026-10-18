@@ -8,6 +8,26 @@ static NtQueryInformationThread_t fnNtQueryInformationThread = NULL;
 static NtSetInformationThread_t   fnNtSetInformationThread   = NULL;
 
 
+std::string AntiDbg::GetDebuggerStatus()
+{
+    std::string status{ "UNKNOWN" };
+    
+    switch (g_hChildState)
+    {
+        case ChildState::ALIVE:
+            status = "ALIVE";
+            break;
+        case ChildState::DEAD:
+            status = "DEAD";
+            break;
+        case ChildState::ERR:
+            status = "ERROR";
+            break;
+    }
+
+    return status;
+}
+
 HANDLE AntiDbg::RunThreadEx(LPTHREAD_START_ROUTINE ThreadEx)
 {
     DWORD dwThreadId = 0;

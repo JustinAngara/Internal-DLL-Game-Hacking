@@ -7,6 +7,8 @@ typedef LONG NTSTATUS;
 typedef NTSTATUS (WINAPI *NtQueryInformationThread_t)(HANDLE, ULONG, PVOID, ULONG, PULONG);
 typedef NTSTATUS (WINAPI *NtSetInformationThread_t)(HANDLE, ULONG, PVOID, ULONG);
 
+// figure out a generic sooner than later
+using TestDetFunc = bool(*)();   
 using Func = void(*)();   
 
 enum ChildState

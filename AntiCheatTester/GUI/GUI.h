@@ -4,10 +4,15 @@
 #include "../ext/imgui/imgui_impl_dx11.h"
 #include "../Detections/Features.h"
 #include "../Detections/Detections.h"
+#include "Colors.h"
 #include <Windows.h>
 #include <d3d11.h>
 #include <tchar.h>
 #include <vector>
+
+
+
+
 
 namespace GUI
 {
@@ -41,9 +46,11 @@ namespace GUI
 
     namespace Display
     {
+        inline std::string banter = "---------------------";
         void DrawFeature(Feature e);
         void DrawAllFeatures();
         void DrawUI();
+        void DrawStats();
     }
     
     // creates, renders, exits

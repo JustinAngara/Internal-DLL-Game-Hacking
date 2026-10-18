@@ -1,16 +1,13 @@
 #pragma once
 #include <string>
 #include <vector>
-
-using TestDetFunc = bool(*)();   
+#include "../Vars.h"
 
 class Feature
 {
 public:
 	Feature(std::string n = "name me", std::string d = "give me a desc", bool f = false)
 		  : m_name(n), m_desc(d), m_isFlagged(f) { }
-
-public:
 
 public:
 	void setName(std::string n) { m_name = n; }

@@ -9,7 +9,6 @@
 
 static HANDLE     g_hChild      = NULL;
 static HANDLE     g_hAttached   = NULL; 
-static ChildState g_hChildState = UNKNOWN;
 
 static std::wstring AttachEventName(DWORD pid)
 {

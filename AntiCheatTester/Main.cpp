@@ -62,10 +62,12 @@ DWORD WINAPI MainThread(LPVOID p)
         // just the debuggerpresentmethod
         if (IsDebuggerPresent())
         {
+            AntiDbg::g_hChildState = ChildState::ALIVE;
             std::cout << "DEBUGGER PRESENT TEST IN THREAD MAIN";
         }
         else
         {
+            AntiDbg::g_hChildState = ChildState::DEAD;
             // std::cout << "DEBUGGER NOT PRESENT";
             // scramble memory -> then crash
             return 1234;

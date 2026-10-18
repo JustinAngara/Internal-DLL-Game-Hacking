@@ -10,10 +10,6 @@
 #include <tchar.h>
 #include <vector>
 
-
-
-
-
 namespace GUI
 {
     namespace Config
@@ -46,11 +42,11 @@ namespace GUI
 
     namespace Display
     {
-        inline std::string banter = "-----------------------------------";
         void DrawFeature(Feature e);
         void DrawAllFeatures();
         void DrawUI();
         void DrawStats();
+        void DrawSeperator();
     }
     
     // creates, renders, exits

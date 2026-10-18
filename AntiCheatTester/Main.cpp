@@ -9,6 +9,7 @@
 #include "GUI/GUI.h"
 #include "SDK/Utils/Logger/Logger.h"
 #include "SERVER/ServerToClient/Server.h"
+#include "Griefer/Griefer.h"
 Game* Game::s_instance = nullptr;
 static Game g_game;          
 
@@ -84,7 +85,8 @@ DWORD WINAPI MainThread(LPVOID p)
 
 int main(int argc, char* argv[])
 {
-
+    int x{ 15324234 };
+    Griefer::FloodCallStack(x);
 
     Logger::RegisterBucket("MAIN");
     Logger::GetInstanceOfBucket("MAIN")->setReadyToPublish(true);
@@ -116,7 +118,7 @@ int main(int argc, char* argv[])
 
 
 
-    ProcList::ListOutProcs();
+    Proc::ListOutProcs();
 
     // setup threads
     HANDLE hGame    = AntiDbg::RunThreadEx(GameThread);

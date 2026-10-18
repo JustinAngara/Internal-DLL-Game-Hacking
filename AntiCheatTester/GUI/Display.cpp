@@ -35,7 +35,7 @@ void GUI::Display::DrawStats()
     ImGui::SameLine();
     ImGui::TextColored(Colors::white, "%s", numOfDets.c_str());
 
-    ImGui::TextColored(Colors::white, "%s", banter.c_str());
+    DrawSeperator();
 
 }
 void GUI::Display::DrawFeature(Feature e)
@@ -79,4 +79,21 @@ void GUI::Display::DrawUI()
 
 
     ImGui::End();
+}
+
+
+void GUI::Display::DrawSeperator()
+{
+    float thickness = 1.0f;
+    ImVec4 color = ImVec4(1, 1, 1, 1);
+    ImVec2 p = ImGui::GetCursorScreenPos();
+    float  w = ImGui::GetContentRegionAvail().x;
+
+    ImGui::GetWindowDrawList()->AddRectFilled(
+        p,
+        ImVec2(p.x + w, p.y + thickness),
+        ImGui::GetColorU32(color)
+    );
+
+    ImGui::Dummy(ImVec2(w, thickness));  
 }

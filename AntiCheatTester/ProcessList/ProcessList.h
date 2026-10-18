@@ -2,11 +2,12 @@
 #include <Windows.h>
 #include <vector>
 #include <string>
-namespace ProcList
+#include <utility>
+namespace Proc
 {
-	inline std::vector<std::string> procNames; 
+	inline std::vector< std::pair<std::string, DWORD> > procList; 
 	inline std::vector<std::string> forbiddenNames; // increase detections here
 	void ListOutProcs();
-	void PrintProcessNameAndID(DWORD processID);
-	bool DoesProcExist(std::string procName);
+	void PopulateProc(DWORD processID);
+	bool DoesProcExist(std::string procName); // TODO
 }

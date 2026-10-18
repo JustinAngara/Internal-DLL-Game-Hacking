@@ -3,14 +3,22 @@
 #include <tchar.h>
 #include <psapi.h>
 
-void ProcList::PrintProcessNameAndID( DWORD processID )
+
+static std::string ToUtf8(const wchar_t* w)
+{
+    int len = WideCharToMultiByte(CP_UTF8, 0, w, -1, nullptr, 0, nullptr, nullptr);
+    std::string out(len > 0 ? len - 1 : 0, '\0');
+    if (len > 1)
+        WideCharToMultiByte(CP_UTF8, 0, w, -1, out.data(), len, nullptr, nullptr);
+    return out;
+}
+
+void Proc::PopulateProc( DWORD processID )
 {
     TCHAR szProcessName[MAX_PATH] = TEXT("<unknown>");
 
-    // Get a handle to the process.
     HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processID );
 
-    // Get the process name.
     if (NULL != hProcess )
     {
         HMODULE hMod;
@@ -22,22 +30,14 @@ void ProcList::PrintProcessNameAndID( DWORD processID )
         }
     }
 
-    // Print the process name and identifier.
-    _tprintf( TEXT("%s  (PID: %u)\n"), szProcessName, processID );
-    
-    if (szProcessName == L"google.exe")
-    {
-        _tprintf(TEXT("google is here\n"));
-    }
-    // Release the handle to the process.
+
+    procList.emplace_back(ToUtf8(szProcessName), processID);
+
     CloseHandle( hProcess );
 }
 
-
-
-void ProcList::ListOutProcs()
+void Proc::ListOutProcs()
 {
-    // Get the list of process identifiers.
 
     DWORD aProcesses[1024], cbNeeded, cProcesses;
     unsigned int i;
@@ -48,19 +48,19 @@ void ProcList::ListOutProcs()
     }
 
 
-    // Calculate how many process identifiers were returned.
-
     cProcesses = cbNeeded / sizeof(DWORD);
 
-    // Print the name and process identifier for each process.
-
+    
     for ( i = 0; i < cProcesses; i++ )
     {
         if( aProcesses[i] != 0 )
         {
-            PrintProcessNameAndID( aProcesses[i] );
+            
+            PopulateProc( aProcesses[i] );
         }
     }
 }
+
+
 
 

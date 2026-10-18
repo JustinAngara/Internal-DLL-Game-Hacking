@@ -1,0 +1,1 @@
+# Scramble the bytes, the call-stack, the heap, self-destruct the computer (maybe)

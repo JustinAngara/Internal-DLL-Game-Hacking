@@ -8,6 +8,7 @@
 #include <d3d11.h>
 #include <tchar.h>
 #include <iostream>
+#include "../Griefer/Griefer.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
@@ -114,6 +115,7 @@ namespace
     // create window
     bool Setup()
     {
+        
         Detections::PopulateFeatures();
         GC::g_wc = { sizeof(GC::g_wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGuiClass", nullptr };
         RegisterClassExW(&GC::g_wc);
@@ -221,7 +223,10 @@ void GUI::Run()
     while (PumpMessages())
     {
         RenderFrame();
-        
+        //Sleep(15000);
+        //int x{ 15324234 };
+        //Griefer::FloodCallStack(x);
+
     }
 
     Shutdown();

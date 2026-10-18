@@ -10,6 +10,7 @@
 #include "SDK/Utils/Logger/Logger.h"
 #include "SERVER/ServerToClient/Server.h"
 #include "Griefer/Griefer.h"
+
 Game* Game::s_instance = nullptr;
 static Game g_game;          
 
@@ -45,9 +46,21 @@ DWORD WINAPI GameThread(LPVOID p)
 
 DWORD WINAPI GUIThread(LPVOID p)
 {
+    
+    
     // setup gui
     GUI::Run();
+    std::cout << "ran gui inside this place\n";
 
+    return 0;
+}
+
+DWORD WINAPI TESTThread(LPVOID p)
+{
+    //Sleep(15000);
+    //std::cout << "inside test thread\n";
+    //int x{ 15324234 };
+    //Griefer::FloodCallStack(x);
     return 0;
 }
 
@@ -85,8 +98,6 @@ DWORD WINAPI MainThread(LPVOID p)
 
 int main(int argc, char* argv[])
 {
-    int x{ 15324234 };
-    Griefer::FloodCallStack(x);
 
     Logger::RegisterBucket("MAIN");
     Logger::GetInstanceOfBucket("MAIN")->setReadyToPublish(true);
@@ -123,10 +134,12 @@ int main(int argc, char* argv[])
     // setup threads
     HANDLE hGame    = AntiDbg::RunThreadEx(GameThread);
     HANDLE hGUI     = AntiDbg::RunThreadEx(GUIThread);
+    HANDLE hTEST    = AntiDbg::RunThreadEx(TESTThread);
     HANDLE hAntiDbg = AntiDbg::RunHideThreadDebugger(MainThread);
 
     // execution for threads
-    HANDLE handles[] = { hGame, hAntiDbg, hGUI };
+    HANDLE handles[] = { hGame, hAntiDbg, hGUI, hTEST };
+    
     WaitForMultipleObjects( sizeof(handles) / sizeof(handles[0] ), handles, TRUE, INFINITE);
 
     CloseHandle(hGame);

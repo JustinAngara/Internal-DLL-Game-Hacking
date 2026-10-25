@@ -1,5 +1,7 @@
 #include "StartRoutine.h"
 #include "../ManualMap/ManualMap.h"
+#include "Shellcode.h"
+
 
 DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet);
 DWORD SR_HijackThread    (HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet);
@@ -56,30 +58,11 @@ DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, D
 
 
 #ifdef _WIN64
-	BYTE Shellcode[] =
-	{
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     // - 0x10   -> argument / returned value
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     // - 0x08   -> pRoutine
-
-		0x48, 0x8B, 0xC1,                                   // + 0x00   -> mov rax, rcx
-		0x48, 0x8B, 0x08,                                   // + 0x03   -> mov rcx, [rax]
-
-		0x48, 0x83, 0xEC, 0x28,                             // + 0x06   -> sub rsp, 0x28
-		0xFF, 0x50, 0x08,                                   // + 0x0A   -> call qword ptr [rax + 0x08]
-		0x48, 0x83, 0xC4, 0x28,                             // + 0x0D   -> add rsp, 0x28
-
-		0x48, 0x8D, 0x0D, 0xD8, 0xFF, 0xFF, 0xFF,           // + 0x11   -> lea rcx, [pCodecave]
-		0x48, 0x89, 0x01,                                   // + 0x18   -> mov [rcx], rax
-		0x48, 0x31, 0xC0,                                   // + 0x1B   -> xor rax, rax
-
-		0xC3                                                // + 0x1E   -> ret
-	}; // SIZE = 0x1F (+ 0x10)
-
-	*reinterpret_cast<void**>      (Shellcode + 0x00) = pArg;
-	*reinterpret_cast<f_Routine**> (Shellcode + 0x08) = pRoutine;
+	*reinterpret_cast<void**>      (ShellCode::X64::B_NtCreateThread + 0x00) = pArg;
+	*reinterpret_cast<f_Routine**> (ShellCode::X64::B_NtCreateThread + 0x08) = pRoutine;
 
 	DWORD FuncOffset = 0x10;
-	BOOL bRet = WriteProcessMemory(hTargetProc, pMem, Shellcode, sizeof(Shellcode), nullptr);
+	BOOL bRet = WriteProcessMemory(hTargetProc, pMem, ShellCode::X64::B_NtCreateThread, sizeof(ShellCode::X64::B_NtCreateThread), nullptr);
 	if (!bRet)
 	{
 		LastWin32Error = GetLastError();
@@ -243,35 +226,7 @@ DWORD SR_HijackThread(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD
 
 #ifdef _WIN64
 
-	BYTE Shellcode[] =
-	{
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,							// - 0x08			-> returned value
 
-		0x48, 0x83, 0xEC, 0x08,													// + 0x00			-> sub rsp, 0x08
-
-		0xC7, 0x04, 0x24, 0x00, 0x00, 0x00, 0x00,								// + 0x04 (+ 0x07)	-> mov [rsp], RipLowPart
-		0xC7, 0x44, 0x24, 0x04, 0x00, 0x00, 0x00, 0x00,							// + 0x0B (+ 0x0F)	-> mov [rsp + 0x04], RipHighPart
-
-		0x50, 0x51, 0x52, 0x41, 0x50, 0x41, 0x51, 0x41, 0x52, 0x41, 0x53,		// + 0x13			-> push r(a/c/d)x / r(8 - 11)
-		0x9C,																	// + 0x1E			-> pushfq
-
-		0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,				// + 0x1F (+ 0x21)	-> mov rax, pRoutine
-		0x48, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,				// + 0x29 (+ 0x2B)	-> mov rcx, pArg
-
-		0x48, 0x83, 0xEC, 0x20,													// + 0x33			-> sub rsp, 0x20
-		0xFF, 0xD0,																// + 0x37			-> call rax
-		0x48, 0x83, 0xC4, 0x20,													// + 0x39			-> add rsp, 0x20
-
-		0x48, 0x8D, 0x0D, 0xB4, 0xFF, 0xFF, 0xFF,								// + 0x3D			-> lea rcx, [pCodecave]
-		0x48, 0x89, 0x01,														// + 0x44			-> mov [rcx], rax
-
-		0x9D,																	// + 0x47			-> popfq
-		0x41, 0x5B, 0x41, 0x5A, 0x41, 0x59, 0x41, 0x58, 0x5A, 0x59, 0x58,		// + 0x48			-> pop r(11-8) / r(d/c/a)x
-
-		0xC6, 0x05, 0xA9, 0xFF, 0xFF, 0xFF, 0x00,								// + 0x53			-> mov byte ptr[$ - 0x57], 0
-
-		0xC3																	// + 0x5A			-> ret
-	}; // SIZE = 0x5B (+ 0x08)
 
 	DWORD FuncOffset	  = 0x08;
 	DWORD CheckByteOffset = 0x03 + FuncOffset;
@@ -279,11 +234,11 @@ DWORD SR_HijackThread(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD
 	DWORD dwLoRIP = (DWORD)( OldContext.Rip & 0xFFFFFFFF );
 	DWORD dwHiRIP = (DWORD( (OldContext.Rip) >> 0x20) & 0xFFFFFFFF );
 
-	*reinterpret_cast<DWORD*>(Shellcode + 0x07 + FuncOffset) = dwLoRIP;
-	*reinterpret_cast<DWORD*>(Shellcode + 0x0F + FuncOffset) = dwHiRIP;
+	*reinterpret_cast<DWORD*>(ShellCode::X64::B_HijackThread + 0x07 + FuncOffset) = dwLoRIP;
+	*reinterpret_cast<DWORD*>(ShellCode::X64::B_HijackThread + 0x0F + FuncOffset) = dwHiRIP;
 
-	*reinterpret_cast<void**>(Shellcode + 0x21 + FuncOffset) = pRoutine;
-	*reinterpret_cast<void**>(Shellcode + 0x2B + FuncOffset) = pArg;
+	*reinterpret_cast<void**>(ShellCode::X64::B_HijackThread + 0x21 + FuncOffset) = pRoutine;
+	*reinterpret_cast<void**>(ShellCode::X64::B_HijackThread + 0x2B + FuncOffset) = pArg;
 
 	OldContext.Rip = reinterpret_cast<UINT_PTR>(pCodecave) + FuncOffset;
 
@@ -330,7 +285,7 @@ DWORD SR_HijackThread(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD
 
 #endif
 
-	if (!WriteProcessMemory(hTargetProc, pCodecave, Shellcode, sizeof(Shellcode), nullptr))
+	if (!WriteProcessMemory(hTargetProc, pCodecave, ShellCode::X64::B_HijackThread, sizeof(ShellCode::X64::B_HijackThread), nullptr))
 	{
 		LastWin32Error = GetLastError();
 
@@ -407,50 +362,14 @@ DWORD SR_SetWindowsHookEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, D
 
 #ifdef _WIN64
 
-	BYTE Shellcode[] =
-	{
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	// - 0x18	-> pArg / returned value / rax	;buffer
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	// - 0x10	-> pRoutine						;pointer to target function
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	// - 0x08	-> CallNextHookEx				;pointer to CallNextHookEx
-
-		0x55,											// + 0x00	-> push rbp						;save important registers
-		0x54,											// + 0x01	-> push rsp
-		0x53,											// + 0x02	-> push rbx
-
-		0x48, 0x8D, 0x1D, 0xDE, 0xFF, 0xFF, 0xFF,		// + 0x03	-> lea rbx, [pArg]				;load pointer into rbx
-
-		0x48, 0x83, 0xEC, 0x20,							// + 0x0A	-> sub rsp, 0x20				;reserve stack
-		0x4D, 0x8B, 0xC8,								// + 0x0E	-> mov r9,r8					;set up arguments for CallNextHookEx
-		0x4C, 0x8B, 0xC2,								// + 0x11	-> mov r8, rdx
-		0x48, 0x8B, 0xD1,								// + 0x14	-> mov rdx,rcx
-		0xFF, 0x53, 0x10,								// + 0x17	-> call [rbx + 0x10]			;call CallNextHookEx
-		0x48, 0x83, 0xC4, 0x20,							// + 0x1A	-> add rsp, 0x20				;update stack
-
-		0x48, 0x8B, 0xC8,								// + 0x1E	-> mov rcx, rax					;copy retval into rcx
-
-		0xEB, 0x00,										// + 0x21	-> jmp $ + 0x02					;jmp to next instruction
-		0xC6, 0x05, 0xF8, 0xFF, 0xFF, 0xFF, 0x18,		// + 0x23	-> mov byte ptr[$ - 0x01], 0x1A	;hotpatch jmp above to skip shellcode
-
-		0x48, 0x87, 0x0B,								// + 0x2A	-> xchg [rbx], rcx				;store CallNextHookEx retval, load pArg
-		0x48, 0x83, 0xEC, 0x20,							// + 0x2D	-> sub rsp, 0x20				;reserve stack
-		0xFF, 0x53, 0x08,								// + 0x31	-> call [rbx + 0x08]			;call pRoutine
-		0x48, 0x83, 0xC4, 0x20,							// + 0x34	-> add rsp, 0x20				;update stack
-
-		0x48, 0x87, 0x03,								// + 0x38	-> xchg [rbx], rax				;store pRoutine retval, restore CallNextHookEx retval
-
-		0x5B,											// + 0x3B	-> pop rbx						;restore important registers
-		0x5C,											// + 0x3C	-> pop rsp
-		0x5D,											// + 0x3D	-> pop rbp
-
-		0xC3											// + 0x3E	-> ret							;return
-	}; // SIZE = 0x3F (+ 0x18)
+	
 
 	DWORD CodeOffset = 0x18;
 	DWORD CheckByteOffset = 0x22 + CodeOffset;
 
-	*reinterpret_cast<void**>(Shellcode + 0x00) = pArg;
-	*reinterpret_cast<void**>(Shellcode + 0x08) = pRoutine;
-	*reinterpret_cast<void**>(Shellcode + 0x10) = pCallNextHookEx;
+	*reinterpret_cast<void**>(ShellCode::X64::B_SetWindowsHookEx + 0x00) = pArg;
+	*reinterpret_cast<void**>(ShellCode::X64::B_SetWindowsHookEx + 0x08) = pRoutine;
+	*reinterpret_cast<void**>(ShellCode::X64::B_SetWindowsHookEx + 0x10) = pCallNextHookEx;
 
 #else
 
@@ -500,7 +419,7 @@ DWORD SR_SetWindowsHookEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, D
 
 #endif
 
-	if (!WriteProcessMemory(hTargetProc, pCodecave, Shellcode, sizeof(Shellcode), nullptr))
+	if (!WriteProcessMemory(hTargetProc, pCodecave, ShellCode::X64::B_SetWindowsHookEx, sizeof(ShellCode::X64::B_SetWindowsHookEx), nullptr))
 	{
 		LastWin32Error = GetLastError();
 
@@ -602,36 +521,11 @@ DWORD SR_QueueUserAPC(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD
 
 #ifdef _WIN64
 
-	BYTE Shellcode[] =
-	{
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,		// - 0x18	-> returned value							;buffer to store returned value
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,		// - 0x10	-> pArg										;buffer to store argument
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,		// - 0x08	-> pRoutine									;pointer to the rouinte to call
-
-		0xEB, 0x00,											// + 0x00	-> jmp $+0x02								;jump to the next instruction
-
-		0x48, 0x8B, 0x41, 0x10,								// + 0x02	-> mov rax, [rcx + 0x10]					;move pRoutine into rax
-		0x48, 0x8B, 0x49, 0x08,								// + 0x06	-> mov rcx, [rcx + 0x08]					;move pArg into rcx
-
-		0x48, 0x83, 0xEC, 0x28,								// + 0x0A	-> sub rsp, 0x28							;reserve stack
-		0xFF, 0xD0,											// + 0x0E	-> call rax									;call pRoutine
-		0x48, 0x83, 0xC4, 0x28,								// + 0x10	-> add rsp, 0x28							;update stack
-
-		0x48, 0x85, 0xC0,									// + 0x14	-> test rax, rax							;check if rax indicates success/failure
-		0x74, 0x11,											// + 0x17	-> je pCodecave + 0x2A						;jmp to ret if routine failed
-
-		0x48, 0x8D, 0x0D, 0xC8, 0xFF, 0xFF, 0xFF,			// + 0x19	-> lea rcx, [pCodecave]						;load pointer to codecave into rcx
-		0x48, 0x89, 0x01,									// + 0x20	-> mov [rcx], rax							;store returned value
-
-		0xC6, 0x05, 0xD7, 0xFF, 0xFF, 0xFF, 0x28,			// + 0x23	-> mov byte ptr[pCodecave + 0x18], 0x28		;hot patch jump to skip shellcode
-
-		0xC3												// + 0x2A	-> ret										;return
-	}; // SIZE = 0x2B (+ 0x10)
 
 	DWORD CodeOffset = 0x18;
 
-	*reinterpret_cast<void**>(Shellcode + 0x08) = pArg;
-	*reinterpret_cast<void**>(Shellcode + 0x10) = pRoutine;
+	*reinterpret_cast<void**>(ShellCode::X64::B_QueueUserAPC + 0x08) = pArg;
+	*reinterpret_cast<void**>(ShellCode::X64::B_QueueUserAPC + 0x10) = pRoutine;
 
 #else
 
@@ -671,7 +565,7 @@ DWORD SR_QueueUserAPC(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD
 
 #endif
 
-	BOOL bRet = WriteProcessMemory(hTargetProc, pCodecave, Shellcode, sizeof(Shellcode), nullptr);
+	BOOL bRet = WriteProcessMemory(hTargetProc, pCodecave, ShellCode::X64::B_QueueUserAPC, sizeof(ShellCode::X64::B_QueueUserAPC), nullptr);
 	if (!bRet)
 	{
 		LastWin32Error = GetLastError();

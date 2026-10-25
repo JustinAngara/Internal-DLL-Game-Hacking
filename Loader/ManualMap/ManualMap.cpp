@@ -1,5 +1,6 @@
 #include "ManualMap.h"
 
+void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData);
 
 DWORD SR_ManualMap(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet)
 {
@@ -113,6 +114,44 @@ DWORD ManualMap(HANDLE hProc, const char* szDllFile)
 
 	memcpy(pSrcData, &data, sizeof(data));
 	WriteProcessMemory(hProc, pTargetBase, pSrcData, 0x1000, nullptr);
+
+	delete[] pSrcData;
+}
+
+
+
+void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData)
+{
+	if (!pData)
+	{
+		return;
+	}
+
+	BYTE* pBase = reinterpret_cast<BYTE*>(pData);
+	auto* pOpt = &reinterpret_cast<IMAGE_NT_HEADERS*>(pBase + reinterpret_cast<IMAGE_DOS_HEADER*>(pData)->e_lfanew)->OptionalHeader;
+
+	auto _loadLibraryA = pData->pLoadLibraryA;
+	auto _GetProcAddress = pData->pGetProcAddress;
+	auto _DllMain = reinterpret_cast<f_DLL_ENTRY_POINT>(pBase + pOpt->AddressOfEntryPoint);
+
+	BYTE* LocationDelta = pBase - pOpt->ImageBase;
+	if (LocationDelta)
+	{
+		// reloc
+		if (!pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size)
+		{
+			return;
+		}
+
+		auto* pRelocData = reinterpret_cast<IMAGE_BASE_RELOCATION*>(pBase+pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
+		while (pRelocData->VirtualAddress)
+		{
+
+		}
+	
+	}
+
+
 
 
 }

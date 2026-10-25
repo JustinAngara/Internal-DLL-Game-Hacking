@@ -2,6 +2,12 @@
 #include "../ManualMap/ManualMap.h"
 #include "Shellcode.h"
 
+//*
+//  TODO HERE MAJOR
+//  DO NOT RUN FIX CURRENT BUGS
+//  - Shellcode doesn't get referenced correctly
+//  - MAJOR MISMATCH OF VERSIONS FOR X86 (X64 FINE)
+// *//
 
 DWORD SR_NtCreateThreadEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet);
 DWORD SR_HijackThread    (HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet);
@@ -244,42 +250,18 @@ DWORD SR_HijackThread(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD
 
 #else
 
-	BYTE Shellcode[] =
-	{
-		0x00, 0x00, 0x00, 0x00,						// - 0x04 (pCodecave)	-> returned value							;buffer to store returned value (eax)
-
-		0x83, 0xEC, 0x04,							// + 0x00				-> sub esp, 0x04							;prepare stack for ret
-		0xC7, 0x04, 0x24, 0x00, 0x00, 0x00, 0x00,	// + 0x03 (+ 0x06)		-> mov [esp], OldEip						;store old eip as return address
-
-		0x50, 0x51, 0x52,							// + 0x0A				-> psuh e(a/c/d)							;save e(a/c/d)x
-		0x9C,										// + 0x0D				-> pushfd									;save flags register
-
-		0xB9, 0x00, 0x00, 0x00, 0x00,				// + 0x0E (+ 0x0F)		-> mov ecx, pArg							;load pArg into ecx
-		0xB8, 0x00, 0x00, 0x00, 0x00,				// + 0x13 (+ 0x14)		-> mov eax, pRoutine
-
-		0x51,										// + 0x18				-> push ecx									;push pArg
-		0xFF, 0xD0,									// + 0x19				-> call eax									;call target function
-
-		0xA3, 0x00, 0x00, 0x00, 0x00,				// + 0x1B (+ 0x1C)		-> mov dword ptr[pCodecave], eax			;store returned value
-
-		0x9D,										// + 0x20				-> popfd									;restore flags register
-		0x5A, 0x59, 0x58,							// + 0x21				-> pop e(d/c/a)								;restore e(d/c/a)x
-
-		0xC6, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00,	// + 0x24 (+ 0x26)		-> mov byte ptr[pCodecave + 0x06], 0x00		;set checkbyte to 0
-
-		0xC3										// + 0x2B				-> ret										;return to OldEip
-	}; // SIZE = 0x2C (+ 0x04)
+	
 
 	DWORD FuncOffset		= 0x04;
 	DWORD CheckByteOffset	= 0x02 + FuncOffset;
 
-	*reinterpret_cast<DWORD*>(Shellcode + 0x06 + FuncOffset) = OldContext.Eip;
+	*reinterpret_cast<DWORD*>(ShellCode::X86::B_HijackThread + 0x06 + FuncOffset) = OldContext.Eip;
 
-	*reinterpret_cast<void**>(Shellcode + 0x0F + FuncOffset) = pArg;
-	*reinterpret_cast<void**>(Shellcode + 0x14 + FuncOffset) = pRoutine;
+	*reinterpret_cast<void**>(ShellCode::X86::B_HijackThread + 0x0F + FuncOffset) = pArg;
+	*reinterpret_cast<void**>(ShellCode::X86::B_HijackThread + 0x14 + FuncOffset) = pRoutine;
 
-	*reinterpret_cast<void**>(Shellcode + 0x1C + FuncOffset) = pCodecave;
-	*reinterpret_cast<BYTE**>(Shellcode + 0x26 + FuncOffset) = reinterpret_cast<BYTE*>(pCodecave) + CheckByteOffset;
+	*reinterpret_cast<void**>(ShellCode::X86::B_HijackThread + 0x1C + FuncOffset) = pCodecave;
+	*reinterpret_cast<BYTE**>(ShellCode::X86::B_HijackThread + 0x26 + FuncOffset) = reinterpret_cast<BYTE*>(pCodecave) + CheckByteOffset;
 
 	OldContext.Eip = reinterpret_cast<DWORD>(pCodecave) + FuncOffset;
 
@@ -373,49 +355,15 @@ DWORD SR_SetWindowsHookEx(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, D
 
 #else
 
-	BYTE Shellcode[] =
-	{
-		0x00, 0x00, 0x00, 0x00,			// - 0x08				-> pArg						;pointer to argument
-		0x00, 0x00, 0x00, 0x00,			// - 0x04				-> pRoutine					;pointer to target function
-
-		0x55,							// + 0x00				-> push ebp					;x86 stack frame creation
-		0x8B, 0xEC,						// + 0x01				-> mov ebp, esp
-
-		0xFF, 0x75, 0x10,				// + 0x03				-> push [ebp + 0x10]		;push CallNextHookEx arguments
-		0xFF, 0x75, 0x0C,				// + 0x06				-> push [ebp + 0x0C] 
-		0xFF, 0x75, 0x08, 				// + 0x09				-> push [ebp + 0x08]
-		0x6A, 0x00,						// + 0x0C				-> push 0x00
-		0xE8, 0x00, 0x00, 0x00, 0x00,	// + 0x0E (+ 0x0F)		-> call CallNextHookEx		;call CallNextHookEx
-
-		0xEB, 0x00,						// + 0x13				-> jmp $ + 0x02				;jmp to next instruction
-
-		0x50,							// + 0x15				-> push eax					;save eax (CallNextHookEx retval)
-		0x53,							// + 0x16				-> push ebx					;save ebx (non volatile)
-
-		0xBB, 0x00, 0x00, 0x00, 0x00,	// + 0x17 (+ 0x18)		-> mov ebx, pArg			;move pArg (pCodecave) into ebx
-		0xC6, 0x43, 0x1C, 0x14,			// + 0x1C				-> mov [ebx + 0x1C], 0x17	;hotpatch jmp above to skip shellcode
-
-		0xFF, 0x33,						// + 0x20				-> push [ebx]				;push pArg (__stdcall)
-
-		0xFF, 0x53, 0x04,				// + 0x22				-> call [ebx + 0x04]		;call target function
-
-		0x89, 0x03,						// + 0x25				-> mov [ebx], eax			;store returned value
-
-		0x5B,							// + 0x27				-> pop ebx					;restore old ebx
-		0x58,							// + 0x28				-> pop eax					;restore eax (CallNextHookEx retval)
-
-		0x5D,							// + 0x29				-> pop ebp					;restore ebp
-		0xC2, 0x0C, 0x00				// + 0x2A				-> ret 0x000C				;return
-	}; // SIZE = 0x3D (+ 0x08)
-
+	
 	DWORD CodeOffset	  = 0x08;
 	DWORD CheckByteOffset = 0x14 + CodeOffset;
 
-	*reinterpret_cast<void**>(Shellcode + 0x00) = pArg;
-	*reinterpret_cast<void**>(Shellcode + 0x04) = pRoutine;
+	*reinterpret_cast<void**>(ShellCode::X86::B_SetWindowsHookEx + 0x00) = pArg;
+	*reinterpret_cast<void**>(ShellCode::X86::B_SetWindowsHookEx + 0x04) = pRoutine;
 
-	*reinterpret_cast<DWORD*>(Shellcode + 0x0F + CodeOffset) = reinterpret_cast<DWORD>(pCallNextHookEx) - (reinterpret_cast<DWORD>(pCodecave) + 0x0E + CodeOffset) - 5;
-	*reinterpret_cast<void**>(Shellcode + 0x18 + CodeOffset) = pCodecave;
+	*reinterpret_cast<DWORD*>(ShellCode::X86::B_SetWindowsHookEx + 0x0F + CodeOffset) = reinterpret_cast<DWORD>(pCallNextHookEx) - (reinterpret_cast<DWORD>(pCodecave) + 0x0E + CodeOffset) - 5;
+	*reinterpret_cast<void**>(ShellCode::X86::B_SetWindowsHookEx + 0x18 + CodeOffset) = pCodecave;
 
 #endif
 

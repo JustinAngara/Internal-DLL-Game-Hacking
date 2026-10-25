@@ -59,7 +59,7 @@ namespace ShellCode
 
 
 
-		inline BYTE B_SetWindowsHookEx[] =
+		inline BYTE B_SetWindowsHook[] =
 		{
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	// - 0x18	-> pArg / returned value / rax	;buffer
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	// - 0x10	-> pRoutine						;pointer to target function
@@ -156,7 +156,7 @@ namespace ShellCode
 			0xC3										// + 0x2B				-> ret										;return to OldEip
 		}; // SIZE = 0x2C (+ 0x04)
 
-		inline BYTE B_SetWindowsHookEx[] =
+		inline BYTE B_SetWindowsHook[] =
 		{
 			0x00, 0x00, 0x00, 0x00,			// - 0x08				-> pArg						;pointer to argument
 			0x00, 0x00, 0x00, 0x00,			// - 0x04				-> pRoutine					;pointer to target function
@@ -190,6 +190,35 @@ namespace ShellCode
 			0x5D,							// + 0x29				-> pop ebp					;restore ebp
 			0xC2, 0x0C, 0x00				// + 0x2A				-> ret 0x000C				;return
 		}; // SIZE = 0x3D (+ 0x08);
+	
+		inline BYTE B_QueueUserAPC[] =
+		{
+			0x00, 0x00, 0x00, 0x00, // - 0x0C	-> returned value					;buffer to store returned value
+			0x00, 0x00, 0x00, 0x00, // - 0x08	-> pArg								;buffer to store argument
+			0x00, 0x00, 0x00, 0x00, // - 0x04	-> pRoutine							;pointer to the routine to call
+
+			0x55,					// + 0x00	-> push ebp							;x86 stack frame creation
+			0x8B, 0xEC,				// + 0x01	-> mov ebp, esp
+
+			0xEB, 0x00,				// + 0x03	-> jmp pCodecave + 0x05 (+ 0x0C)	;jump to next instruction
+
+			0x53,					// + 0x05	-> push ebx							;save ebx
+			0x8B, 0x5D, 0x08,		// + 0x06	-> mov ebx, [ebp + 0x08]			;move pCodecave into ebx (non volatile)
+
+			0xFF, 0x73, 0x04,		// + 0x09	-> push [ebx + 0x04]				;push pArg on stack
+			0xFF, 0x53, 0x08,		// + 0x0C	-> call dword ptr[ebx + 0x08]		;call pRoutine
+
+			0x85, 0xC0,				// + 0x0F	-> test eax, eax					;check if eax indicates success/failure
+			0x74, 0x06,				// + 0x11	-> je pCodecave + 0x19 (+ 0x0C)		;jmp to cleanup if routine failed
+
+			0x89, 0x03,				// + 0x13	-> mov [ebx], eax					;store returned value
+			0xC6, 0x43, 0x10, 0x15, // + 0x15	-> mov byte ptr [ebx + 0x10], 0x15	;hot patch jump to skip shellcode
+
+			0x5B,					// + 0x19	-> pop ebx							;restore old ebx
+
+			0x5D,					// + 0x1A	-> pop ebp							;restore ebp
+			0xC2, 0x04, 0x00		// + 0x1B	-> ret 0x0004						;return
+		}; // SIZE = 0x1E (+ 0x0C)
 	}
 
 }

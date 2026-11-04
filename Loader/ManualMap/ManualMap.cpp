@@ -10,11 +10,12 @@ DWORD SR_ManualMap(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& L
 
 
 
-bool ManualMap(HANDLE hProc, const char * szDllFile)
+
+bool ManualMap(HANDLE hProc, const char* szDllFile)
 {
 	BYTE*					pSrcData		= nullptr;
 	IMAGE_NT_HEADERS*		pOldNtHeader	= nullptr;
-	IMAGE_OPTIONAL_HEADER* pOldOptHeader	= nullptr;
+	IMAGE_OPTIONAL_HEADER*  pOldOptHeader	= nullptr;
 	IMAGE_FILE_HEADER*		pOldFileHeader	= nullptr;
 	BYTE*					pTargetBase		= nullptr;
 
@@ -152,7 +153,6 @@ bool ManualMap(HANDLE hProc, const char * szDllFile)
 }
 
 
-
 void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData)
 {
 	if (!pData)
@@ -163,20 +163,18 @@ void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData)
 	BYTE* pBase = reinterpret_cast<BYTE*>(pData);
 	auto* pOpt = &reinterpret_cast<IMAGE_NT_HEADERS*>(pBase + reinterpret_cast<IMAGE_DOS_HEADER*>(pData)->e_lfanew)->OptionalHeader;
 
-	auto _loadLibraryA = pData->pLoadLibraryA;
-	auto _GetProcAddress = pData->pGetProcAddress;
-	auto _DllMain = reinterpret_cast<f_DLL_ENTRY_POINT>(pBase + pOpt->AddressOfEntryPoint);
+	auto _LoadLibraryA		= pData->pLoadLibraryA;
+	auto _GetProcAddress	= pData->pGetProcAddress;
+	auto _DllMain			= reinterpret_cast<f_DLL_ENTRY_POINT>(pBase + pOpt->AddressOfEntryPoint);
 
 	BYTE* LocationDelta = pBase - pOpt->ImageBase;
 	if (LocationDelta)
 	{
-		// reloc
 		if (!pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size)
 		{
 			return;
 		}
-
-		auto* pRelocData = reinterpret_cast<IMAGE_BASE_RELOCATION*>(pBase+pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
+		auto* pRelocData = reinterpret_cast<IMAGE_BASE_RELOCATION*>(pBase + pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
 		while (pRelocData->VirtualAddress)
 		{
 			UINT AmountOfEntries = (pRelocData->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
@@ -186,18 +184,12 @@ void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData)
 			{
 				if (RELOC_FLAG(*pRelativeInfo))
 				{
-					UINT_PTR* pPatch = reinterpret_cast<UINT_PTR*>(pBase + pRelocData->VirtualAddress + ((*pRelativeInfo) & 0XFFF));
+					UINT_PTR* pPatch = reinterpret_cast<UINT_PTR*>(pBase + pRelocData->VirtualAddress + ((*pRelativeInfo) & 0xFFF));
 					*pPatch += reinterpret_cast<UINT_PTR>(LocationDelta);
-
-
 				}
 			}
-			
-
 			pRelocData = reinterpret_cast<IMAGE_BASE_RELOCATION*>(reinterpret_cast<BYTE*>(pRelocData) + pRelocData->SizeOfBlock);
-
 		}
-	
 	}
 
 	if (pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size)
@@ -206,27 +198,24 @@ void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData)
 		while (pImportDescr->Name)
 		{
 			char* szMod = reinterpret_cast<char*>(pBase + pImportDescr->Name);
-			HINSTANCE hDll = _loadLibraryA(szMod);
-			ULONG_PTR* pThunkRef = reinterpret_cast<ULONG_PTR*>(pBase + pImportDescr->OriginalFirstThunk);
-			ULONG_PTR* pFuncRef  = reinterpret_cast<ULONG_PTR*>(pBase + pImportDescr->FirstThunk);
+			HINSTANCE hDll = _LoadLibraryA(szMod);
 
-			if (!pFuncRef)
-			{
+			ULONG_PTR* pThunkRef	= reinterpret_cast<ULONG_PTR*>(pBase + pImportDescr->OriginalFirstThunk);
+			ULONG_PTR* pFuncRef	= reinterpret_cast<ULONG_PTR*>(pBase + pImportDescr->FirstThunk);
+
+			if (!pThunkRef)
 				pThunkRef = pFuncRef;
-			}
 
 			for (; *pThunkRef; ++pThunkRef, ++pFuncRef)
 			{
 				if (IMAGE_SNAP_BY_ORDINAL(*pThunkRef))
 				{
 					*pFuncRef = _GetProcAddress(hDll, reinterpret_cast<char*>(*pThunkRef & 0xFFFF));
-				} 
+				}
 				else
 				{
 					auto* pImport = reinterpret_cast<IMAGE_IMPORT_BY_NAME*>(pBase + (*pThunkRef));
 					*pFuncRef = _GetProcAddress(hDll, pImport->Name);
-
-
 				}
 			}
 			++pImportDescr;
@@ -237,25 +226,13 @@ void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData)
 	{
 		auto* pTLS = reinterpret_cast<IMAGE_TLS_DIRECTORY*>(pBase + pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress);
 		auto* pCallback = reinterpret_cast<PIMAGE_TLS_CALLBACK*>(pTLS->AddressOfCallBacks);
-
 		for (; pCallback && *pCallback; ++pCallback)
 		{
 			(*pCallback)(pBase, DLL_PROCESS_ATTACH, nullptr);
 		}
-
 	}
 
 	_DllMain(pBase, DLL_PROCESS_ATTACH, nullptr);
 
 	pData->hMod = reinterpret_cast<HINSTANCE>(pBase);
-	
-
-
-}
-
-
-// will utlize start routine
-int pseudoEntryTest()
-{
-	return 0;
 }

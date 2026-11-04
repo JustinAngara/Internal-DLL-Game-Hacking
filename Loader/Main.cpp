@@ -2,7 +2,7 @@
 #include "ManualMap/ManualMap.h"
 
 #include <TlHelp32.h>
-
+#include <iostream>
 #define DLL_PATH_X86 TEXT("ProcessHooker.dll")
 #define DLL_PATH_X64 TEXT("C:\\Users\\justi\\C++ Code\\Internal Base Starter\\ProcessHooker\\ProcessHooker\\out\\build\\x64-Release\\ProcessHooker.dll")
 #define PROCESS_NAME_X64 TEXT("notepad++.exe")
@@ -27,6 +27,9 @@
 
 int ManualMapEntry(const TCHAR* szProc)
 {
+	// print proc
+	_tprintf(_T("%s\n"), szProc);
+
 	PROCESSENTRY32 PE32{ 0 };
 	PE32.dwSize = sizeof(PE32);
 
@@ -63,7 +66,6 @@ int ManualMapEntry(const TCHAR* szProc)
 	}
 
 
-
 	if (!ManualMap(hProc, szDllFile))
 	{
 		CloseHandle(hProc);
@@ -76,6 +78,7 @@ int ManualMapEntry(const TCHAR* szProc)
 
 	return 0;
 }
+
 HANDLE GetProcessByName(const TCHAR* szProcName, DWORD dwDesiredAccess = PROCESS_ALL_ACCESS)
 {
 	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -114,7 +117,6 @@ bool InjectDll(const TCHAR* szProcess, const TCHAR* szPath, LAUNCH_METHOD Method
 	if (Method == LM_ManualMap)
 	{
 		// manual map special
-
 		return ManualMapEntry( PROCESS_NAME );
 	}
 

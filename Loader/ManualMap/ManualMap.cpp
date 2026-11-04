@@ -146,13 +146,26 @@ void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData)
 		auto* pRelocData = reinterpret_cast<IMAGE_BASE_RELOCATION*>(pBase+pOpt->DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
 		while (pRelocData->VirtualAddress)
 		{
+			UINT AmountOfEntries = (pRelocData->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
+			WORD* pRelativeInfo = reinterpret_cast<WORD*>(pRelocData + 1);
+
+			for (UINT i = 0; i != AmountOfEntries; ++i, ++pRelativeInfo)
+			{
+				if (RELOC_FLAG(*pRelativeInfo))
+				{
+					UINT_PTR* pPatch = reinterpret_cast<UINT_PTR*>(pBase + pRelocData->VirtualAddress + ((*pRelativeInfo) & 0XFFF));
+					*pPatch += reinterpret_cast<UINT_PTR>(LocationDelta);
+
+
+				}
+			}
+			
+
+			pRelocData = reinterpret_cast<IMAGE_BASE_RELOCATION*>(reinterpret_cast<BYTE*>(pRelocData) + pRelocData->SizeOfBlock);
 
 		}
 	
 	}
-
-
-
 
 }
 

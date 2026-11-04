@@ -9,6 +9,7 @@
 
 DWORD WINAPI CS2::CounterStrikeThread(LPVOID lpParam)
 {
+    printf("now in the counter strike thread");
     HMODULE hModule = static_cast<HMODULE>(lpParam);
 
     AllocConsole();

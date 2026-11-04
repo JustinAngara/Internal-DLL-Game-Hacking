@@ -32,4 +32,4 @@ struct MANUAL_MAPPING_DATA
 
 
 DWORD SR_ManualMap(HANDLE hTargetProc, f_Routine* pRoutine, void* pArg, DWORD& LastWin32Error, UINT_PTR& RemoteRet);
-DWORD ManualMap(HANDLE hProc, const char* szDllFile);
+bool ManualMap(HANDLE hProc, const char* szDllFile);

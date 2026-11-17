@@ -25,6 +25,7 @@ PVOID MemoryPatcher::ScanPatch(LPCSTR funcName)
         if (!hookedFunc) return nullptr; 
 
         DWORD64 moduleBase = (DWORD64)ntdll;
+#ifdef _WIN64
         auto funcData = RtlLookupFunctionEntry((DWORD64)hookedFunc, &moduleBase, nullptr);
         if (!funcData) return nullptr;   
 
@@ -41,6 +42,8 @@ PVOID MemoryPatcher::ScanPatch(LPCSTR funcName)
         }
 
         return hookedFunc; 
+#endif
+        return nullptr;
     }
     catch (...)
     {
@@ -67,26 +70,7 @@ size_t MemoryPatcher::RunPatch(PVOID hookedFunc, PVOID originalFunc, DWORD funcS
 
 void MemoryPatcher::PatchAll()
 {
-    // important functions to patching
-    const char* functionsToPatch[] = {
-        // important stuff
-        "NtReadVirtualMemory",
-        "NtWriteVirtualMemory",
-        "NtProtectVirtualMemory",
-        "NtQuerySystemInformation",
-        "NtSetSystemInformation",
-        "NtOpenProcess",
-        "NtAllocateVirtualMemory",
-        "NtFreeVirtualMemory",
-        // time bs
-        "NtGetTickCount",
-        "NtQueryPerformanceCounter",
-        "NtQuerySystemTime",
-        "RtlTimeFieldsToTime",
-        // APC
-        "NtQueueApcThread"
-
-    };
+    
 
     for (const char* funcName : functionsToPatch) 
     {

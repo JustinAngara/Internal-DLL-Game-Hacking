@@ -42,8 +42,9 @@ PVOID MemoryPatcher::ScanPatch(LPCSTR funcName)
         }
 
         return hookedFunc; 
-#endif
+#else
         return nullptr;
+#endif
     }
     catch (...)
     {

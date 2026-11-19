@@ -8,7 +8,13 @@ To see if a arbritrary thread is 'spawned' and any operations is done (thus is a
 */
 namespace ThreadFinder
 {
-	void TF_CreateThread();                         // arbritrarily create thread
-	void TestThread();                           // arbritrarily reference bookkeep of thread
+	namespace Test
+	{
+		void T_CreateThread();                      // arbritrarily create thread
+	}
+
+	void RunEntry();
+	void BaseThread();                           // arbritrarily reference bookkeep of thread
 	bool BaseThreadInitThunk(uintptr_t nSource); //
+
 }

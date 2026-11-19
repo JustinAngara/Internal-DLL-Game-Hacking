@@ -10,12 +10,17 @@
 #include "SDK/Utils/Logger/Logger.h"
 #include "SERVER/ServerToClient/Server.h"
 #include "Griefer/Griefer.h"
-
+#include "ThreadFinder/ThreadFinder.h"
 Game* Game::s_instance = nullptr;
 static Game g_game;          
 
 
 
+DWORD WINAPI AntiThread(LPVOID p)
+{
+    //ThreadFinder::RunEntry();
+    return 0;
+}
 
 DWORD WINAPI GameThread(LPVOID p)
 {
@@ -132,13 +137,14 @@ int main(int argc, char* argv[])
     Proc::ListOutProcs();
 
     // setup threads
-    HANDLE hGame    = AntiDbg::RunThreadEx(GameThread);
-    HANDLE hGUI     = AntiDbg::RunThreadEx(GUIThread);
-    HANDLE hTEST    = AntiDbg::RunThreadEx(TESTThread);
-    HANDLE hAntiDbg = AntiDbg::RunHideThreadDebugger(MainThread);
+    HANDLE hGame       = AntiDbg::RunThreadEx(GameThread);
+    HANDLE hGUI        = AntiDbg::RunThreadEx(GUIThread);
+    HANDLE hTEST       = AntiDbg::RunThreadEx(TESTThread);
+    HANDLE hAntiDbg    = AntiDbg::RunHideThreadDebugger(MainThread);
+    HANDLE hAntiThread = AntiDbg::RunThreadEx(AntiThread);
 
     // execution for threads
-    HANDLE handles[] = { hGame, hAntiDbg, hGUI, hTEST };
+    HANDLE handles[] = { hGame, hAntiDbg, hGUI, hTEST, hAntiThread };
     
     WaitForMultipleObjects( sizeof(handles) / sizeof(handles[0] ), handles, TRUE, INFINITE);
 

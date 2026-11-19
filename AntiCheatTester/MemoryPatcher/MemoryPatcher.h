@@ -29,4 +29,11 @@ namespace MemoryPatcher
 	PVOID ScanPatch(LPCSTR funcName);
 	size_t RunPatch(PVOID hookedFunc, PVOID originalFunc, DWORD funcSize);
 	void PatchAll();
+
+    namespace Tester
+    {
+        void ScrambleFunction();
+    }
 }
+
+
